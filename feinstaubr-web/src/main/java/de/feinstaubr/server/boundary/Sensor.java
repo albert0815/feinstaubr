@@ -64,16 +64,15 @@ public class Sensor {
 		em.persist(measurement);
 	}
 	
-	@Path("/{id}/{date}")
+	@Path("/{id}/{type}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getSensorData(@PathParam("id") String id, @PathParam("date")String date) {
+	public Response getSensorData(@PathParam("id") String id, @PathParam("type")String type) {
+		LOGGER.info("reading data for " + id + " type " + type);
 		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 		CriteriaQuery<SensorMeasurement> query = criteriaBuilder.createQuery(SensorMeasurement.class);
 		Root<SensorMeasurement> root = query.from(SensorMeasurement.class);
 		query.select(root);
-		
-		
 		List<SensorMeasurement> resultList = em.createQuery(query).getResultList();
 		
 		
@@ -86,17 +85,53 @@ public class Sensor {
 			
 			//https://developers.google.com/chart/interactive/docs/dev/implementing_data_source?hl=pt-BR#jsondatatable
 			SimpleDateFormat df = new SimpleDateFormat("yyyy,M,d,H,m,s");
+			BigDecimal value;
+			switch (type) {
+			case "temperature":
+				value = m.getTemperatur();
+				break;
+			case "humidity":
+				value = m.getHumidity();
+				break;
+			case "p1":
+				value = m.getP1();
+				break;
+			case "p2":
+				value = m.getP2();
+				break;
+			default:
+				throw new RuntimeException("unknown type " + type);
+			}
 			rowBuilder.add(Json.createObjectBuilder().add("c",
 					Json.createArrayBuilder()
 						.add(Json.createObjectBuilder().add("v", Json.createArrayBuilder().add(m.getDate().getHours()).add(m.getDate().getMinutes()).add(m.getDate().getSeconds())))
-						.add(Json.createObjectBuilder().add("v", m.getTemperatur()))
+						.add(Json.createObjectBuilder().add("v", value))
 					).build()
 				);
 		}
+		
+		String label;
+		switch (type) {
+		case "temperature":
+			label = "Degree Celsius";
+			break;
+		case "humidity":
+			label = "Humidity in Percent";
+			break;
+		case "p1":
+			label = "P2.5 parts pro million";
+			break;
+		case "p2":
+			label = "P10 parts pro million";
+			break;
+		default:
+			throw new RuntimeException("unknown type " + type);
+		}
+
 		JsonObject result = Json.createObjectBuilder()
 		.add("cols", Json.createArrayBuilder()
 				.add(Json.createObjectBuilder().add("type", "timeofday").add("label", "Time").build())
-				.add(Json.createObjectBuilder().add("type", "number").add("label", "Degree Celsius").build())
+				.add(Json.createObjectBuilder().add("type", "number").add("label", label).build())
 			)
 		.add("rows", rowBuilder.build()).build();
 
