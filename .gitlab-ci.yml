@@ -29,6 +29,5 @@ build:
 deploy:
   stage: deploy
   script:
-    - docker stop feinstaubr
     - docker build . -t feinstaubr
     - docker run feinstaubr --name feinstaubr
