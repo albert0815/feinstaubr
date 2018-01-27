@@ -140,7 +140,7 @@
         <subsystem xmlns="urn:jboss:domain:core-management:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:5.0">
             <datasources>
-                   <datasource jndi-name="java:jboss/jdbc/monitoring-datasource"
+                   <datasource jndi-name="java:jboss/jdbc/feinstaub-datasource"
                           pool-name="postgresDS" enabled="true" use-java-context="true">
                           <connection-url>jdbc:postgresql://feinstaub-db:5432/feinstaub</connection-url>
                           <driver-class>org.postgresql.Driver</driver-class>
