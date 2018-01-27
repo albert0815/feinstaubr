@@ -32,3 +32,4 @@ deploy:
     - docker build . -t feinstaubr
     - docker stop feinstaubr && docker rm feinstaubr || true
     - docker run --detach --name feinstaubr feinstaubr 
+    - docker network connect web feinstaubr || true
