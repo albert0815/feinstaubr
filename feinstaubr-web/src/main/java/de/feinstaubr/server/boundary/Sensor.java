@@ -79,7 +79,7 @@ public class Sensor {
 		Root<SensorMeasurement> root = query.from(SensorMeasurement.class);
 		query.select(root);
 		
-		Predicate predicateId = criteriaBuilder.equal(root.get(SensorMeasurement_.id), id);
+		Predicate predicateId = criteriaBuilder.equal(root.get(SensorMeasurement_.sensorId), id);
 		query.where(predicateId);
 		query.orderBy(criteriaBuilder.desc(root.get(SensorMeasurement_.date)));
 		TypedQuery<SensorMeasurement> createQuery = em.createQuery(query);
@@ -98,7 +98,7 @@ public class Sensor {
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.HOUR, -24);
 		Date nowBefore24h = cal.getTime();
-		query.where(criteriaBuilder.and(criteriaBuilder.equal(root.get(SensorMeasurement_.id), id), criteriaBuilder.greaterThanOrEqualTo(root.get(SensorMeasurement_.date), nowBefore24h)));
+		query.where(criteriaBuilder.and(criteriaBuilder.equal(root.get(SensorMeasurement_.sensorId), id), criteriaBuilder.greaterThanOrEqualTo(root.get(SensorMeasurement_.date), nowBefore24h)));
 		query.select(root);
 		List<SensorMeasurement> resultList = em.createQuery(query).getResultList();
 		
