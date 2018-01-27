@@ -1,62 +1,116 @@
 <html>
 <head>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
-	<script type="text/javascript">
-		google.charts.load('current', { 'packages' : [ 'corechart' ] });
-	
-		google.charts.setOnLoadCallback(drawChart);
-	
-		function drawChart() {
-			createChart("temperature", "Temperature");
-			createChart("humidity", "Humidity");
-			createChart("p1", "PM2.5");
-			createChart("p2", "PM10");
-		}
-		function createChart(sensorType, sensorLabel) {
-			var temperature = $.ajax({
-				url : "rest/sensor/7620363/" + sensorType,
-				dataType : "json",
-				async : false
-			}).responseText;
-			var data = new google.visualization.DataTable(temperature);
-			var chart = new google.visualization.LineChart(document.getElementById(sensorType));
-	
-			var options = {
-				title : sensorLabel,
-				legend : {
-					position : 'bottom'
-				},
-				curveType : 'function',
-				vAxis : {
-					minValue : 0,
-				},
-				hAxis : {
-					gridlines: { count: 6 } 
+<!-- from https://material.io/components -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="text/javascript"
+	src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript"
+	src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<link rel="stylesheet"
+	href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+<script type="text/javascript">
+	google.charts.load('current', {
+		'packages' : [ 'corechart' ]
+	});
+
+	google.charts.setOnLoadCallback(drawChart);
+
+	function drawChart() {
+		createChart("temperature", "Temperature");
+		createChart("humidity", "Humidity");
+		createChart("p1", "PM2.5");
+		createChart("p2", "PM10");
+	}
+	function createChart(sensorType, sensorLabel) {
+		var temperature = $.ajax({
+			url : "rest/sensor/7620363/" + sensorType,
+			dataType : "json",
+			async : false
+		}).responseText;
+		var data = new google.visualization.DataTable(temperature);
+		var chart = new google.visualization.LineChart(document
+				.getElementById(sensorType));
+
+		var options = {
+			title : sensorLabel,
+			legend : {
+				position : 'bottom'
+			},
+			curveType : 'function',
+			vAxis : {
+				minValue : 0,
+			},
+			hAxis : {
+				gridlines : {
+					count : 6
 				}
-			};
-	
-			chart.draw(data, options);
+			}
+		};
 
-		}
-		$(window).resize(function(){
-			drawChart();
-		});
+		chart.draw(data, options);
 
-	</script>
+	}
+	$(window).resize(function() {
+		drawChart();
+	});
+</script>
+<style>
+.my-bordered-list {
+	/* remove the side padding. we'll be placing it around the item instead. */
+	padding-right: 0;
+	padding-left: 0;
+}
+
+.my-bordered-list .mdc-list-item {
+	/* Add the list side padding padding to the list item. */
+	padding: 0 16px;
+	/* Add a border around each element. */
+	border: 1px solid rgba(0, 0, 0, .12);
+}
+/* Ensure adjacent borders don't collide with one another. */
+.my-bordered-list .mdc-list-item:not (:first-child ) {
+	border-top: none;
+}
+</style>
 </head>
 <body class="mdc-typography">
-	<main>
-		<h1 class="mdc-typography--display1">Hab Dich lieb!!</h1>
-		<div id="temperature"></div>
-		<div id="humidity"></div>
-		<div id="p1"></div>
-		<div id="p2"></div>
+	<header class="mdc-toolbar mdc-toolbar--fixed">
+	  <div class="mdc-toolbar__row">
+	    <section class="mdc-toolbar__section mdc-toolbar__section--align-start">
+	      <span class="mdc-toolbar__title">Hab Dich lieb</span>
+	    </section>
+	  </div>
+	</header>
+	<main class="mdc-toolbar-fixed-adjust">
+	<div class="mdc-layout-grid">
+		<div class="mdc-layout-grid__inner">
+			<div class="mdc-layout-grid__cell mdc-card  mdc-layout-grid__cell--span-12">
+				<ul class="mdc-list mdc-list--dense">
+					<li class="mdc-list-item">Single-line item</li>
+					<li class="mdc-list-item">Single-line item</li>
+					<li class="mdc-list-item">Single-line item</li>
+				</ul>
+			</div>
+			<div class="mdc-layout-grid__cell mdc-card  mdc-layout-grid__cell--span-6">
+				<div id="temperature"></div>
+			</div>
+			<div class="mdc-layout-grid__cell mdc-card  mdc-layout-grid__cell--span-6">
+				<div id="humidity"></div>
+			</div>
+			<div class="mdc-layout-grid__cell mdc-card  mdc-layout-grid__cell--span-6">
+				<div id="p1"></div>
+			</div>
+			<div class="mdc-layout-grid__cell mdc-card  mdc-layout-grid__cell--span-6">
+				<div id="p2"></div>
+			</div>
+		</div>
+	</div>
 	</main>
-	
-	<script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
-	<script>window.mdc.autoInit();</script>  
+
+	<script
+		src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+	<script>
+		window.mdc.autoInit();
+	</script>
 </body>
 </html>

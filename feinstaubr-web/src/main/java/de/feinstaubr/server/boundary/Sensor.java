@@ -2,6 +2,8 @@ package de.feinstaubr.server.boundary;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -13,8 +15,11 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -25,6 +30,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import de.feinstaubr.server.entity.SensorMeasurement;
+import de.feinstaubr.server.entity.SensorMeasurement_;
 
 @Stateless
 @Path("sensor")
@@ -64,6 +70,23 @@ public class Sensor {
 		em.persist(measurement);
 	}
 	
+	@Path("/{id}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getSensorData(@PathParam("id") String id) {
+		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+		CriteriaQuery<SensorMeasurement> query = criteriaBuilder.createQuery(SensorMeasurement.class);
+		Root<SensorMeasurement> root = query.from(SensorMeasurement.class);
+		query.select(root);
+		
+		Predicate predicateId = criteriaBuilder.equal(root.get(SensorMeasurement_.id), id);
+		query.where(predicateId);
+		query.orderBy(criteriaBuilder.desc(root.get(SensorMeasurement_.date)));
+		TypedQuery<SensorMeasurement> createQuery = em.createQuery(query);
+		return Response.ok(createQuery.getResultList().get(createQuery.getFirstResult())).build();
+	}
+
+	
 	@Path("/{id}/{type}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -72,6 +95,10 @@ public class Sensor {
 		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 		CriteriaQuery<SensorMeasurement> query = criteriaBuilder.createQuery(SensorMeasurement.class);
 		Root<SensorMeasurement> root = query.from(SensorMeasurement.class);
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.HOUR, -24);
+		Date nowBefore24h = cal.getTime();
+		query.where(criteriaBuilder.and(criteriaBuilder.equal(root.get(SensorMeasurement_.id), id), criteriaBuilder.greaterThanOrEqualTo(root.get(SensorMeasurement_.date), nowBefore24h)));
 		query.select(root);
 		List<SensorMeasurement> resultList = em.createQuery(query).getResultList();
 		
