@@ -30,5 +30,5 @@ deploy:
   stage: deploy
   script:
     - docker build . -t feinstaubr
-    - docker rm feinstaubr || true
+    - docker stop feinstaubr && docker rm feinstaubr || true
     - docker run --detach --name feinstaubr feinstaubr 
