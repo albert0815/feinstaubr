@@ -39,4 +39,4 @@ deploy:
     - docker network create --driver bridge feinstaub-network 
     - docker run --detach --name feinstaubr-web --network=feinstaub-network feinstaubr-web 
     - docker run --detach --name feinstaubr-db --network=feinstaub-network feinstaubr-db
-    - docker network connect web feinstaubr || true
+    - docker network connect web feinstaubr-web || true
