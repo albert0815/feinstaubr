@@ -11,43 +11,49 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet">
 <script type="text/javascript">
+	var doUpdate = true;
+	var chartData = new Map();
+	chartData.set("temperature", null);
+	chartData.set("humidity", null);
+	chartData.set("p1", null);
+	chartData.set("p2", null);
+	
 	var loadingStatus = new Map();
-	loadingStatus.set("current", false);
-	loadingStatus.set("temperature", false);
-	loadingStatus.set("humidity", false);
-	loadingStatus.set("p1", false);
-	loadingStatus.set("p2", false);
+	
+	var labels = new Map();
+	labels.set("temperature", "Temperatur in °C");
+	labels.set("humidity", "Luftfeuchtigkeit in %");
+	labels.set("p2", "Feinstaub PM2.5 in µg/m³");
+	labels.set("p1", "Feinstaub PM10 in µg/m³");
+
 	
 	google.charts.load('current', {
 		'packages' : [ 'corechart' ]
 	});
 
-	google.charts.setOnLoadCallback(drawChart);
+	google.charts.setOnLoadCallback(loadData);
 
-	function drawChart() {
+	function loadData() {
 		$("#progressbar").css("display", "block");
-		updateCurrent();
-		createChart("temperature");
-		createChart("humidity");
-		createChart("p1");
-		createChart("p2");
-		setTimeout(drawChart, 60000);
-	}
-	$( document ).ajaxError(function( event, jqxhr, settings, thrownError ) {
-		console.log(event, jqxhr, settings, thrownError);
-		$("#progressbar").css("display", "none");
-	});
-	function checkDone() {
-		var allDone = true;
-		loadingStatus.forEach(function (item, key, mapObj) {  
-			if (loadingStatus.get(key) == false) {
-				allDone = false
-			}
+		chartData.forEach(function (value, sensorType, mapObj) {
+			loadingStatus.set(sensorType, false);
 		});
-		if (allDone) {
-			$("#progressbar").css("display", "none");
+		updateCurrent();
+
+		chartData.forEach(function (value, sensorType, mapObj) {
+			$.getJSON("rest/sensor/7620363/" + sensorType, function(data) {
+				chartData.set(sensorType, data);
+				drawChart(sensorType);
+				loadingStatus.set(sensorType, true);
+				checkDone();
+			});
+		});
+		
+		if (doUpdate) {
+			setTimeout(loadData, 120000);
 		}
 	}
+	
 	function updateCurrent() {
 		loadingStatus["current"] = false;
 		$.getJSON("rest/sensor/7620363", function(data) {
@@ -59,59 +65,120 @@
 			
 			$("#current_temperature").html(data.temperatur + " °C");
 			$("#current_humidity").html(data.humidity + " %");
-			$("#current_p2").html("(P2.5) " + data.p2 + " µg/m³");
-			$("#current_p1").html("(P10) " + data.p1 + " µg/m³");
+			$("#current_p2").html("(PM2.5) " + data.p2 + " µg/m³");
+			$("#current_p1").html("(PM10) " + data.p1 + " µg/m³");
 			loadingStatus.set("current", true);
 			checkDone();
 		});
 	}
-	function createChart(sensorType) {
-		loadingStatus[sensorType] = false;
-		var labels = new Map();
-		labels.set("temperature", "Temperatur in °C");
-		labels.set("humidity", "Luftfeuchtigkeit in %");
-		labels.set("p2", "Feinstaub PM2.5 in µg/m³");
-		labels.set("p1", "Feinstaub PM10 in µg/m³");
-		$.getJSON("rest/sensor/7620363/" + sensorType, function(data) {
-			var dataTable = new google.visualization.DataTable();
-			dataTable.addColumn('datetime', 'Time');
-			dataTable.addColumn('number', labels.get(sensorType));
-			var arrayLength = data.length;
-			for (var i = 0; i < arrayLength; i++) {
-			    data[i][0] = new Date(data[i][0]);
-				dataTable.addRow(data[i])
+
+	
+	
+	function drawChart(sensorType) {
+		var dataTable = new google.visualization.DataTable();
+		dataTable.addColumn('datetime', 'Time');
+		dataTable.addColumn('number', labels.get(sensorType));
+		var data = chartData.get(sensorType);
+		var arrayLength = data.length;
+		for (var i = 0; i < arrayLength; i++) {
+			dataTable.addRow([new Date(data[i][0]), data[i][1]]);
+		}
+		var formatDate = new google.visualization.DateFormat({pattern: 'dd.MM.yyyy HH:mm:ss'});
+		formatDate.format(dataTable, 0);
+		var chart = new google.visualization.LineChart(document.getElementById(sensorType));
+
+		var options = {
+			legend : {
+				position : 'none'
+			},
+			curveType : 'function',
+			vAxis : {
+				minValue : 0,
+			},
+			hAxis : {
+				gridlines : {
+					count : 6,
+					color: 'none',
+				},
+		        format: 'HH:mm'
 			}
-			var formatDate = new google.visualization.DateFormat({pattern: 'dd.MM.yyyy HH:mm:ss'});
-			formatDate.format(dataTable, 0);
-			var chart = new google.visualization.LineChart(document.getElementById(sensorType));
+		};
 
-			var options = {
-				legend : {
-					position : 'none'
-				},
-				curveType : 'function',
-				vAxis : {
-					minValue : 0,
-				},
-				hAxis : {
-					gridlines : {
-						count : 6,
-						color: 'none',
-					},
-			        format: 'HH:mm'
-				}
-			};
-
-			chart.draw(dataTable, options);
-			
-			loadingStatus.set(sensorType, true);
-			checkDone();
-		});
+		chart.draw(dataTable, options);
 	}
 	
-	$(window).resize(function() {
-		drawChart();
+	function checkDone() {
+		var allDone = true;
+		loadingStatus.forEach(function (item, key, mapObj) {  
+			if (loadingStatus.get(key) == false) {
+				allDone = false
+			}
+		});
+		if (allDone) {
+			$("#progressbar").css("display", "none");
+		}
+	}
+
+
+	
+	$( document ).ajaxError(function( event, jqxhr, settings, thrownError ) {
+		console.log(event, jqxhr, settings, thrownError);
+		$("#progressbar").css("display", "none");
 	});
+
+	
+	$(window).resize(function() {
+		chartData.forEach(function (value, sensorType, mapObj) {
+			drawChart(sensorType);
+		});
+	});
+	
+	function getHiddenProp(){
+	    var prefixes = ['webkit','moz','ms','o'];
+	    
+	    // if 'hidden' is natively supported just return it
+	    if ('hidden' in document) return 'hidden';
+	    
+	    // otherwise loop over all the known prefixes until we find one
+	    for (var i = 0; i < prefixes.length; i++){
+	        if ((prefixes[i] + 'Hidden') in document) 
+	            return prefixes[i] + 'Hidden';
+	    }
+
+	    // otherwise it's not supported
+	    return null;
+	}
+	
+	function isHidden() {
+	    var prop = getHiddenProp();
+	    if (!prop) return false;
+	    
+	    return document[prop];
+	}
+	
+	// use the property name to generate the prefixed event name
+	var visProp = getHiddenProp();
+	if (visProp) {
+	  var evtname = visProp.replace(/[H|h]idden/,'') + 'visibilitychange';
+	  document.addEventListener(evtname, visChange);
+	}
+
+	function visChange() {
+	   if (isHidden()) {
+		   doUpdate = false
+	   } else {
+		   doUpdate = true;
+		   loadData();
+	   }
+	   var txtFld = document.getElementById('visChangeText');
+
+	   if (txtFld) {
+	      if (isHidden())
+	         txtFld.value += "Tab Hidden!\n";
+	      else
+	         txtFld.value += "Tab Visible!\n";
+	   }
+	}
 </script>
 <style>
 .my-bordered-list {
@@ -136,7 +203,7 @@
 	<header class="mdc-toolbar mdc-toolbar--fixed">
 	  <div class="mdc-toolbar__row">
 	    <section class="mdc-toolbar__section mdc-toolbar__section--align-start">
-	      <span class="mdc-toolbar__title">Hab Dich lieb</span>
+	      <span class="mdc-toolbar__title">Feinstaubr</span>
 	    </section>
 	  </div>
 	  	<div id="progressbar" role="progressbar" class="mdc-linear-progress mdc-linear-progress--indeterminate">
@@ -207,11 +274,11 @@
 				<div class="mdc-card" id="humidity"></div>
 			</div>
 			<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
-				<h3>P2.5</h3>
+				<h3>PM2.5</h3>
 				<div class="mdc-card" id="p2"></div>
 			</div>
 			<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
-				<h3>P10</h3>
+				<h3>PM10</h3>
 				<div class="mdc-card" id="p1"></div>
 			</div>
 		</div>

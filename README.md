@@ -7,3 +7,7 @@
 - activate gzip for json
 - ladebalken
 - only update if focus
+- landscape iphone niht unbedingt zwei nebeneinander
+- durchschnitt / höchst / niedrigstwert
+- daten von ajax speichern für redraw der diagramme bei resize
+- build prozess unterschied in persistence.xml

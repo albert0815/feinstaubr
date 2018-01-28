@@ -122,7 +122,7 @@ public class Sensor {
 			//SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 			
 			//https://developers.google.com/chart/interactive/docs/dev/implementing_data_source?hl=pt-BR#jsondatatable
-			SimpleDateFormat df = new SimpleDateFormat("yyyy,M,d,H,m,s");
+//			SimpleDateFormat df = new SimpleDateFormat("yyyy,M,d,H,m,s");
 			BigDecimal value;
 			switch (type) {
 			case "temperature":
@@ -147,24 +147,6 @@ public class Sensor {
 					);
 		}
 		
-		String label;
-		switch (type) {
-		case "temperature":
-			label = "Degree Celsius";
-			break;
-		case "humidity":
-			label = "Humidity in Percent";
-			break;
-		case "p1":
-			label = "P2.5 µg/m³";
-			break;
-		case "p2":
-			label = "P10 µg/m³";
-			break;
-		default:
-			throw new RuntimeException("unknown type " + type);
-		}
-
 		return Response.ok(rowBuilder.build()).build();
 	}
 	
