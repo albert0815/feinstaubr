@@ -16,40 +16,52 @@
 	google.charts.setOnLoadCallback(drawChart);
 
 	function drawChart() {
-		createChart("temperature", "Temperature");
-		createChart("humidity", "Humidity");
-		createChart("p1", "PM2.5");
-		createChart("p2", "PM10");
+		createChart("temperature");
+		createChart("humidity");
+		createChart("p1");
+		createChart("p2");
+		updateCurrent();
+	}
+	function updateCurrent() {
+		$.getJSON("rest/sensor/7620363", function(data) {
+			console.log(data);
+			var d = new Date(data.date); 
+			$("#current_date").html(
+					d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear() + 
+					" " + 
+					d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds());
+			
+			$("#current_temperature").html(data.temperatur + " °C");
+			$("#current_humidity").html(data.humidity + " %");
+			$("#current_p1").html(data.p1 + " µg/m³");
+			$("#current_p2").html(data.p2 + " µg/m³");
+		});
 	}
 	function createChart(sensorType, sensorLabel) {
-		var temperature = $.ajax({
-			url : "rest/sensor/7620363/" + sensorType,
-			dataType : "json",
-			async : false
-		}).responseText;
-		var data = new google.visualization.DataTable(temperature);
-		var chart = new google.visualization.LineChart(document
-				.getElementById(sensorType));
+		$.getJSON("rest/sensor/7620363/" + sensorType, function(data) {
+			var data = new google.visualization.DataTable(data);
+			var chart = new google.visualization.LineChart(document.getElementById(sensorType));
 
-		var options = {
-			title : sensorLabel,
-			legend : {
-				position : 'bottom'
-			},
-			curveType : 'function',
-			vAxis : {
-				minValue : 0,
-			},
-			hAxis : {
-				gridlines : {
-					count : 6
+			var options = {
+				legend : {
+					position : 'bottom'
+				},
+				curveType : 'function',
+				vAxis : {
+					minValue : 0,
+				},
+				hAxis : {
+					gridlines : {
+						count : 6
+					},
+			        format: 'HH:mm'
 				}
-			}
-		};
+			};
 
-		chart.draw(data, options);
-
+			chart.draw(data, options);
+		});
 	}
+	
 	$(window).resize(function() {
 		drawChart();
 	});
@@ -84,24 +96,63 @@
 	<main class="mdc-toolbar-fixed-adjust">
 	<div class="mdc-layout-grid">
 		<div class="mdc-layout-grid__inner">
-			<div class="mdc-layout-grid__cell mdc-card  mdc-layout-grid__cell--span-12">
+			<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
+				<h3>Aktuell</h3>
+				<div class="mdc-card">
 				<ul class="mdc-list mdc-list--dense">
-					<li class="mdc-list-item">Single-line item</li>
-					<li class="mdc-list-item">Single-line item</li>
-					<li class="mdc-list-item">Single-line item</li>
+					<li class="mdc-list-item">
+						<span class="mdc-list-item__graphic">
+							<img src="graphics/clock.png" alt="Date" width="24" height="24">
+						</span>
+						<span class="mdc-list-item__text" id="current_date">laden...</span>
+					</li>
+					<li class="mdc-list-item">
+						<span class="mdc-list-item__graphic">
+							<img src="graphics/temperature-celsius.png" alt="Degree Celsius" width="24" height="24">
+						</span>
+						<span class="mdc-list-item__text" id="current_temperature">laden...</span>
+					</li>
+					<li class="mdc-list-item">
+						<span class="mdc-list-item__graphic">
+							<img src="graphics/water-percent.png" alt="Percent Humidity" width="24" height="24">
+						</span>
+						<span class="mdc-list-item__text" id="current_humidity">laden...</span>
+					</li>
+					<li class="mdc-list-item">
+						<span class="mdc-list-item__graphic">
+							<img src="graphics/factory.png" alt="P2.5" width="24" height="24">
+						</span>
+						<span class="mdc-list-item__text" id="current_p1">laden...</span>
+					</li>
+					<li class="mdc-list-item">
+						<span class="mdc-list-item__graphic">
+							<img src="graphics/factory.png" alt="P10" width="24" height="24">
+						</span>
+						<span class="mdc-list-item__text" id="current_p2">laden...</span>
+					</li>
 				</ul>
+				</div>
 			</div>
-			<div class="mdc-layout-grid__cell mdc-card  mdc-layout-grid__cell--span-6">
-				<div id="temperature"></div>
+		</div>
+	</div>
+	<div class="mdc-layout-grid">
+		<div class="mdc-layout-grid__inner">
+
+			<div class="mdc-layout-grid__cell  mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
+				<h3>Temperatur</h3>
+				<div class="mdc-card" id="temperature"></div>
 			</div>
-			<div class="mdc-layout-grid__cell mdc-card  mdc-layout-grid__cell--span-6">
-				<div id="humidity"></div>
+			<div class="mdc-layout-grid__cell   mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
+				<h3>Luftfeuchtigkeit</h3>
+				<div class="mdc-card" id="humidity"></div>
 			</div>
-			<div class="mdc-layout-grid__cell mdc-card  mdc-layout-grid__cell--span-6">
-				<div id="p1"></div>
+			<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
+				<h3>P2.5</h3>
+				<div class="mdc-card" id="p1"></div>
 			</div>
-			<div class="mdc-layout-grid__cell mdc-card  mdc-layout-grid__cell--span-6">
-				<div id="p2"></div>
+			<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
+				<h3>P10</h3>
+				<div class="mdc-card" id="p2"></div>
 			</div>
 		</div>
 	</div>

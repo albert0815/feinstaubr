@@ -1,6 +1,7 @@
 package de.feinstaubr.server.boundary;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -44,9 +45,20 @@ public class Sensor {
 	@POST
 	public void save(JsonObject o) {
 		SensorMeasurement measurement = new SensorMeasurement();
-		measurement.setDate(new Date());
+		if (o.containsKey("date")) {
+			// for testing purposes, this is not provided by the sensor
+			try {
+				measurement.setDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(o.getString("date")));
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		} else {
+			measurement.setDate(new Date());
+		}
 		measurement.setSensorId(o.getString("esp8266id"));
-		measurement.setSoftwareVersion(o.getString("software_version"));
+		if (o.containsKey("software_version")) {
+			measurement.setSoftwareVersion(o.getString("software_version"));
+		}
 		JsonArray sensorDataValues = o.getJsonArray("sensordatavalues");
 		for (int i = 0; i < sensorDataValues.size(); i++) {
 			JsonObject sensorData = sensorDataValues.getJsonObject(i);
@@ -64,7 +76,6 @@ public class Sensor {
 				measurement.setHumidity(new BigDecimal(sensorData.getString("value")));
 				break;
 			}
-			
 		}
 		LOGGER.info("saving new measurement " + measurement);
 		em.persist(measurement);
@@ -146,10 +157,10 @@ public class Sensor {
 			label = "Humidity in Percent";
 			break;
 		case "p1":
-			label = "P2.5 parts pro million";
+			label = "P2.5 µg/m³";
 			break;
 		case "p2":
-			label = "P10 parts pro million";
+			label = "P10 µg/m³";
 			break;
 		default:
 			throw new RuntimeException("unknown type " + type);

@@ -4,3 +4,4 @@
 - last 24h in sensor bean, include type and id filter
 - include other types in web page
 - make it responsive
+- activate gzip for json
