@@ -5,3 +5,5 @@
 - include other types in web page
 - make it responsive
 - activate gzip for json
+- ladebalken
+- only update if focus

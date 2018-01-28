@@ -11,6 +11,13 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet">
 <script type="text/javascript">
+	var loadingStatus = new Map();
+	loadingStatus.set("current", false);
+	loadingStatus.set("temperature", false);
+	loadingStatus.set("humidity", false);
+	loadingStatus.set("p1", false);
+	loadingStatus.set("p2", false);
+	
 	google.charts.load('current', {
 		'packages' : [ 'corechart' ]
 	});
@@ -18,14 +25,31 @@
 	google.charts.setOnLoadCallback(drawChart);
 
 	function drawChart() {
+		$("#progressbar").css("display", "block");
+		updateCurrent();
 		createChart("temperature");
 		createChart("humidity");
 		createChart("p1");
 		createChart("p2");
-		updateCurrent();
 		setTimeout(drawChart, 60000);
 	}
+	$( document ).ajaxError(function( event, jqxhr, settings, thrownError ) {
+		console.log(event, jqxhr, settings, thrownError);
+		$("#progressbar").css("display", "none");
+	});
+	function checkDone() {
+		var allDone = true;
+		loadingStatus.forEach(function (item, key, mapObj) {  
+			if (loadingStatus.get(key) == false) {
+				allDone = false
+			}
+		});
+		if (allDone) {
+			$("#progressbar").css("display", "none");
+		}
+	}
 	function updateCurrent() {
+		loadingStatus["current"] = false;
 		$.getJSON("rest/sensor/7620363", function(data) {
 			var d = new Date(data.date); 
 			$("#current_date").html(
@@ -37,9 +61,12 @@
 			$("#current_humidity").html(data.humidity + " %");
 			$("#current_p2").html("(P2.5) " + data.p2 + " µg/m³");
 			$("#current_p1").html("(P10) " + data.p1 + " µg/m³");
+			loadingStatus.set("current", true);
+			checkDone();
 		});
 	}
 	function createChart(sensorType) {
+		loadingStatus[sensorType] = false;
 		var labels = new Map();
 		labels.set("temperature", "Temperatur in °C");
 		labels.set("humidity", "Luftfeuchtigkeit in %");
@@ -76,6 +103,9 @@
 			};
 
 			chart.draw(dataTable, options);
+			
+			loadingStatus.set(sensorType, true);
+			checkDone();
 		});
 	}
 	
@@ -109,8 +139,20 @@
 	      <span class="mdc-toolbar__title">Hab Dich lieb</span>
 	    </section>
 	  </div>
+	  	<div id="progressbar" role="progressbar" class="mdc-linear-progress mdc-linear-progress--indeterminate">
+	  <div class="mdc-linear-progress__buffering-dots"></div>
+	  <div class="mdc-linear-progress__buffer"></div>
+	  <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
+	    <span class="mdc-linear-progress__bar-inner"></span>
+	  </div>
+	  <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
+	    <span class="mdc-linear-progress__bar-inner"></span>
+	  </div>
+	</div>				
+	  
 	</header>
 	<main class="mdc-toolbar-fixed-adjust">
+		
 	<div class="mdc-layout-grid">
 		<div class="mdc-layout-grid__inner">
 			<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
@@ -121,31 +163,32 @@
 						<span class="mdc-list-item__graphic">
 							<i class="material-icons" aria-hidden="true">access_time</i>
 						</span>
-						<span class="mdc-list-item__text" id="current_date">laden...</span>
+						<span class="mdc-list-item__text" id="current_date">
+						</span>
 					</li>
 					<li class="mdc-list-item">
 						<span class="mdc-list-item__graphic">
 							<i class="material-icons" aria-hidden="true">wb_sunny</i>
 						</span>
-						<span class="mdc-list-item__text" id="current_temperature">laden...</span>
+						<span class="mdc-list-item__text" id="current_temperature"></span>
 					</li>
 					<li class="mdc-list-item">
 						<span class="mdc-list-item__graphic">
 							<i class="material-icons" aria-hidden="true">grain</i>
 						</span>
-						<span class="mdc-list-item__text" id="current_humidity">laden...</span>
+						<span class="mdc-list-item__text" id="current_humidity"></span>
 					</li>
 					<li class="mdc-list-item">
 						<span class="mdc-list-item__graphic">
 							<i class="material-icons" aria-hidden="true">location_city</i>
 						</span>
-						<span class="mdc-list-item__text" id="current_p2">laden...</span>
+						<span class="mdc-list-item__text" id="current_p2"></span>
 					</li>
 					<li class="mdc-list-item">
 						<span class="mdc-list-item__graphic">
 							<i class="material-icons" aria-hidden="true">location_city</i>
 						</span>
-						<span class="mdc-list-item__text" id="current_p1">laden...</span>
+						<span class="mdc-list-item__text" id="current_p1"></span>
 					</li>
 				</ul>
 				</div>
@@ -154,10 +197,10 @@
 	</div>
 	<div class="mdc-layout-grid">
 		<div class="mdc-layout-grid__inner">
-
 			<div class="mdc-layout-grid__cell  mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
 				<h3>Temperatur</h3>
-				<div class="mdc-card" id="temperature"></div>
+				<div class="mdc-card" id="temperature">
+				</div>
 			</div>
 			<div class="mdc-layout-grid__cell   mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
 				<h3>Luftfeuchtigkeit</h3>

@@ -77,7 +77,7 @@ public class Sensor {
 				break;
 			}
 		}
-		LOGGER.info("saving new measurement " + measurement);
+		LOGGER.fine("saving new measurement " + measurement);
 		em.persist(measurement);
 	}
 	
@@ -102,7 +102,7 @@ public class Sensor {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getSensorData(@PathParam("id") String id, @PathParam("type")String type) {
-		LOGGER.info("reading data for " + id + " type " + type);
+		LOGGER.fine("reading data for " + id + " type " + type);
 		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 		CriteriaQuery<SensorMeasurement> query = criteriaBuilder.createQuery(SensorMeasurement.class);
 		Root<SensorMeasurement> root = query.from(SensorMeasurement.class);
