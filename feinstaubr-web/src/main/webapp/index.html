@@ -39,7 +39,9 @@
 	}
 	function createChart(sensorType, sensorLabel) {
 		$.getJSON("rest/sensor/7620363/" + sensorType, function(data) {
-			var data = new google.visualization.DataTable(data);
+			var dataTable = new google.visualization.DataTable(data);
+			var formatDate = new google.visualization.DateFormat({pattern: 'dd.MM.yyyy HH:mm:ss'});
+			formatDate.format(dataTable, 0);
 			var chart = new google.visualization.LineChart(document.getElementById(sensorType));
 
 			var options = {
@@ -52,13 +54,15 @@
 				},
 				hAxis : {
 					gridlines : {
-						count : 6
+						count : 6,
+						color: 'none',
+
 					},
 			        format: 'HH:mm'
 				}
 			};
 
-			chart.draw(data, options);
+			chart.draw(dataTable, options);
 		});
 	}
 	
