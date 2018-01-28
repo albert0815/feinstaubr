@@ -33,8 +33,8 @@
 			
 			$("#current_temperature").html(data.temperatur + " °C");
 			$("#current_humidity").html(data.humidity + " %");
-			$("#current_p1").html(data.p1 + " µg/m³");
-			$("#current_p2").html(data.p2 + " µg/m³");
+			$("#current_p2").html("(P2.5) " + data.p2 + " µg/m³");
+			$("#current_p1").html("(P10) " + data.p1 + " µg/m³");
 		});
 	}
 	function createChart(sensorType, sensorLabel) {
@@ -122,13 +122,13 @@
 						<span class="mdc-list-item__graphic">
 							<img src="graphics/factory.png" alt="P2.5" width="24" height="24">
 						</span>
-						<span class="mdc-list-item__text" id="current_p1">laden...</span>
+						<span class="mdc-list-item__text" id="current_p2">laden...</span>
 					</li>
 					<li class="mdc-list-item">
 						<span class="mdc-list-item__graphic">
 							<img src="graphics/factory.png" alt="P10" width="24" height="24">
 						</span>
-						<span class="mdc-list-item__text" id="current_p2">laden...</span>
+						<span class="mdc-list-item__text" id="current_p1">laden...</span>
 					</li>
 				</ul>
 				</div>
@@ -148,11 +148,11 @@
 			</div>
 			<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
 				<h3>P2.5</h3>
-				<div class="mdc-card" id="p1"></div>
+				<div class="mdc-card" id="p2"></div>
 			</div>
 			<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
 				<h3>P10</h3>
-				<div class="mdc-card" id="p2"></div>
+				<div class="mdc-card" id="p1"></div>
 			</div>
 		</div>
 	</div>
