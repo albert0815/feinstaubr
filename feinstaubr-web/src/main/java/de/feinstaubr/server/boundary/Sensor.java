@@ -140,12 +140,11 @@ public class Sensor {
 			default:
 				throw new RuntimeException("unknown type " + type);
 			}
-			rowBuilder.add(Json.createObjectBuilder().add("c",
+			rowBuilder.add(
 					Json.createArrayBuilder()
-						.add(Json.createObjectBuilder().add("v", "Date(" + df.format(m.getDate()) + ")"))
-						.add(Json.createObjectBuilder().add("v", value))
-					).build()
-				);
+						.add(m.getDate().getTime())
+						.add(value)
+					);
 		}
 		
 		String label;
@@ -166,14 +165,7 @@ public class Sensor {
 			throw new RuntimeException("unknown type " + type);
 		}
 
-		JsonObject result = Json.createObjectBuilder()
-		.add("cols", Json.createArrayBuilder()
-				.add(Json.createObjectBuilder().add("type", "datetime").add("label", "Time").build())
-				.add(Json.createObjectBuilder().add("type", "number").add("label", label).build())
-			)
-		.add("rows", rowBuilder.build()).build();
-
-		return Response.ok(result).build();
+		return Response.ok(rowBuilder.build()).build();
 	}
 	
 }

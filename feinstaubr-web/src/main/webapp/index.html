@@ -8,6 +8,8 @@
 	src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <link rel="stylesheet"
 	href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
 <script type="text/javascript">
 	google.charts.load('current', {
 		'packages' : [ 'corechart' ]
@@ -24,7 +26,6 @@
 	}
 	function updateCurrent() {
 		$.getJSON("rest/sensor/7620363", function(data) {
-			console.log(data);
 			var d = new Date(data.date); 
 			$("#current_date").html(
 					d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear() + 
@@ -37,16 +38,28 @@
 			$("#current_p1").html("(P10) " + data.p1 + " µg/m³");
 		});
 	}
-	function createChart(sensorType, sensorLabel) {
+	function createChart(sensorType) {
+		var labels = new Map();
+		labels.set("temperature", "Temperatur in °C");
+		labels.set("humidity", "Luftfeuchtigkeit in %");
+		labels.set("p2", "Feinstaub PM2.5 in µg/m³");
+		labels.set("p1", "Feinstaub PM10 in µg/m³");
 		$.getJSON("rest/sensor/7620363/" + sensorType, function(data) {
-			var dataTable = new google.visualization.DataTable(data);
+			var dataTable = new google.visualization.DataTable();
+			dataTable.addColumn('datetime', 'Time');
+			dataTable.addColumn('number', labels.get(sensorType));
+			var arrayLength = data.length;
+			for (var i = 0; i < arrayLength; i++) {
+			    data[i][0] = new Date(data[i][0]);
+				dataTable.addRow(data[i])
+			}
 			var formatDate = new google.visualization.DateFormat({pattern: 'dd.MM.yyyy HH:mm:ss'});
 			formatDate.format(dataTable, 0);
 			var chart = new google.visualization.LineChart(document.getElementById(sensorType));
 
 			var options = {
 				legend : {
-					position : 'bottom'
+					position : 'none'
 				},
 				curveType : 'function',
 				vAxis : {
@@ -56,7 +69,6 @@
 					gridlines : {
 						count : 6,
 						color: 'none',
-
 					},
 			        format: 'HH:mm'
 				}
@@ -106,31 +118,31 @@
 				<ul class="mdc-list mdc-list--dense">
 					<li class="mdc-list-item">
 						<span class="mdc-list-item__graphic">
-							<img src="graphics/clock.png" alt="Date" width="24" height="24">
+							<i class="material-icons" aria-hidden="true">access_time</i>
 						</span>
 						<span class="mdc-list-item__text" id="current_date">laden...</span>
 					</li>
 					<li class="mdc-list-item">
 						<span class="mdc-list-item__graphic">
-							<img src="graphics/temperature-celsius.png" alt="Degree Celsius" width="24" height="24">
+							<i class="material-icons" aria-hidden="true">wb_sunny</i>
 						</span>
 						<span class="mdc-list-item__text" id="current_temperature">laden...</span>
 					</li>
 					<li class="mdc-list-item">
 						<span class="mdc-list-item__graphic">
-							<img src="graphics/water-percent.png" alt="Percent Humidity" width="24" height="24">
+							<i class="material-icons" aria-hidden="true">grain</i>
 						</span>
 						<span class="mdc-list-item__text" id="current_humidity">laden...</span>
 					</li>
 					<li class="mdc-list-item">
 						<span class="mdc-list-item__graphic">
-							<img src="graphics/factory.png" alt="P2.5" width="24" height="24">
+							<i class="material-icons" aria-hidden="true">location_city</i>
 						</span>
 						<span class="mdc-list-item__text" id="current_p2">laden...</span>
 					</li>
 					<li class="mdc-list-item">
 						<span class="mdc-list-item__graphic">
-							<img src="graphics/factory.png" alt="P10" width="24" height="24">
+							<i class="material-icons" aria-hidden="true">location_city</i>
 						</span>
 						<span class="mdc-list-item__text" id="current_p1">laden...</span>
 					</li>
