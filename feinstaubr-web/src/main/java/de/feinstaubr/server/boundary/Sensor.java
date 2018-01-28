@@ -131,7 +131,7 @@ public class Sensor {
 			}
 			rowBuilder.add(Json.createObjectBuilder().add("c",
 					Json.createArrayBuilder()
-						.add(Json.createObjectBuilder().add("v", df.format(m.getDate())))
+						.add(Json.createObjectBuilder().add("v", "Date(" + df.format(m.getDate()) + ")"))
 						.add(Json.createObjectBuilder().add("v", value))
 					).build()
 				);
