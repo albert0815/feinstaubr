@@ -23,6 +23,7 @@
 		createChart("p1");
 		createChart("p2");
 		updateCurrent();
+		setTimeout(drawChart, 60000);
 	}
 	function updateCurrent() {
 		$.getJSON("rest/sensor/7620363", function(data) {
