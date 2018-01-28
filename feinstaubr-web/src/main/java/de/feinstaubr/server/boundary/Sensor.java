@@ -131,7 +131,7 @@ public class Sensor {
 			}
 			rowBuilder.add(Json.createObjectBuilder().add("c",
 					Json.createArrayBuilder()
-						.add(Json.createObjectBuilder().add("v", Json.createArrayBuilder().add(m.getDate().getHours()).add(m.getDate().getMinutes()).add(m.getDate().getSeconds())))
+						.add(Json.createObjectBuilder().add("v", df.format(m.getDate())))
 						.add(Json.createObjectBuilder().add("v", value))
 					).build()
 				);
@@ -157,7 +157,7 @@ public class Sensor {
 
 		JsonObject result = Json.createObjectBuilder()
 		.add("cols", Json.createArrayBuilder()
-				.add(Json.createObjectBuilder().add("type", "timeofday").add("label", "Time").build())
+				.add(Json.createObjectBuilder().add("type", "datetime").add("label", "Time").build())
 				.add(Json.createObjectBuilder().add("type", "number").add("label", label).build())
 			)
 		.add("rows", rowBuilder.build()).build();
