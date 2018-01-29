@@ -102,7 +102,12 @@
 		for (var i = 0; i < arrayLength; i++) {
 			dataTable.addRow([new Date(data[i][0] * 100000), data[i][1]]);
 		}
-		var formatDate = new google.visualization.DateFormat({pattern: 'dd.MM.yyyy HH:mm:ss'});
+		var formatDate;
+		if (getPeriod() === "8760") {
+			formatDate = new google.visualization.DateFormat({pattern: 'dd.MM.yyyy'});
+		} else {
+			formatDate = new google.visualization.DateFormat({pattern: 'dd.MM.yyyy HH:mm'});
+		}
 		formatDate.format(dataTable, 0);
 		var chart = new google.visualization.LineChart(document.getElementById(sensorType));
 		var formatString = "dd.MM.";
