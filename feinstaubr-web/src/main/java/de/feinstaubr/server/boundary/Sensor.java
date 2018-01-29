@@ -125,9 +125,7 @@ public class Sensor {
 		query.setParameter(1, interval);
 		query.setParameter(2, interval);
 		query.setParameter(3, c.getTime());
-		System.out.println(c.getTime());
 		List<Object[]> result = query.getResultList();
-//		System.out.println("interval: " + interval + " - result size: " + result.size());
 		JsonArrayBuilder jsonResult = Json.createArrayBuilder();
 		for (Object[] o : result) {
 			Timestamp timestamp = (Timestamp)o[0];
@@ -139,7 +137,6 @@ public class Sensor {
 			case "p2": index = 4; break;
 			default: throw new RuntimeException();
 			}
-			System.out.println(timestamp + " - " + o[index]);
 			if (o[index] != null) {
 				jsonResult.add(Json.createArrayBuilder().add(timestamp.getTime() / 100000).add((BigDecimal)o[index]));
 			}
