@@ -11,12 +11,15 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet">
 <script type="text/javascript">
-	var doUpdate = true;
+	var reloadEvent;
+	var lastUpdate;
+	var loadInProgress;
+	const TIMEOUT=1200000;
 	var chartData = new Map();
 	chartData.set("temperature", null);
-	chartData.set("humidity", null);
-	chartData.set("p1", null);
-	chartData.set("p2", null);
+// 	chartData.set("humidity", null);
+// 	chartData.set("p1", null);
+// 	chartData.set("p2", null);
 	
 	var loadingStatus = new Map();
 	
@@ -27,52 +30,68 @@
 	labels.set("p1", "Feinstaub PM10 in µg/m³");
 
 	
-	google.charts.load('current', {
-		'packages' : [ 'corechart' ]
-	});
-
-	google.charts.setOnLoadCallback(loadData);
-
 	function loadData() {
-		$("#progressbar").css("display", "block");
-		chartData.forEach(function (value, sensorType, mapObj) {
-			loadingStatus.set(sensorType, false);
-		});
+		loadInProgress = true;
+		
 		updateCurrent();
+		updateAllCharts();
+	}
 
-		chartData.forEach(function (value, sensorType, mapObj) {
-			$.getJSON("rest/sensor/7620363/" + sensorType, function(data) {
-				chartData.set(sensorType, data);
-				drawChart(sensorType);
-				loadingStatus.set(sensorType, true);
+	function updateCurrent() {
+		$("#progressbar").css("display", "block");
+		var jqXHR = $.getJSON("rest/sensor/7620363/")
+			.done(function(data) {
+				var d = new Date(data.date); 
+				$("#current_date").html(
+						pad(d.getDate()) + "." + pad(d.getMonth() + 1) + "." + d.getFullYear() + 
+						" " + 
+						pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()));
+				
+				$("#current_temperature").html(data.temperatur + " °C");
+				$("#current_humidity").html(data.humidity + " %");
+				$("#current_p2").html("(PM2.5) " + data.p2 + " µg/m³");
+				$("#current_p1").html("(PM10) " + data.p1 + " µg/m³");
+			}).fail(function(jqXHR, status, error) {
+				if (jqXHR.statusText !== "abort") {
+					$(".mdc-snackbar").addClass("mdc-snackbar--active");
+				}
+			}).always(function() {
+				loadingStatus.delete("current");
 				checkDone();
 			});
-		});
-		
-		if (doUpdate) {
-			setTimeout(loadData, 120000);
-		}
+		loadingStatus.set("current", jqXHR);
 	}
 	
-	function updateCurrent() {
-		loadingStatus["current"] = false;
-		$.getJSON("rest/sensor/7620363", function(data) {
-			var d = new Date(data.date); 
-			$("#current_date").html(
-					d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear() + 
-					" " + 
-					d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds());
-			
-			$("#current_temperature").html(data.temperatur + " °C");
-			$("#current_humidity").html(data.humidity + " %");
-			$("#current_p2").html("(PM2.5) " + data.p2 + " µg/m³");
-			$("#current_p1").html("(PM10) " + data.p1 + " µg/m³");
-			loadingStatus.set("current", true);
-			checkDone();
-		});
+	function pad(n) {
+		return n<10 ? '0'+n : n;
+	}
+	
+	function getPeriod() {
+		var period = location.hash.substr(1);
+		if (!period) {
+			period = "24";
+		}
+		return period;
 	}
 
-	
+	function updateAllCharts() {
+		$("#progressbar").css("display", "block");
+		chartData.forEach(function (value, sensorType, mapObj) {
+			var jqXHR = $.getJSON("rest/sensor/7620363/" + getPeriod() + "/" + sensorType)
+			.done(function(data) {
+				chartData.set(sensorType, data);
+				drawChart(sensorType);
+			}).fail(function(jqXHR, status, error) {
+				if (jqXHR.statusText !== "abort") {
+					$(".mdc-snackbar").addClass("mdc-snackbar--active");
+				}
+			}).always(function() {
+				loadingStatus.delete(sensorType);
+				checkDone();
+			});
+			loadingStatus.set(sensorType, jqXHR);
+		});
+	}
 	
 	function drawChart(sensorType) {
 		var dataTable = new google.visualization.DataTable();
@@ -81,12 +100,26 @@
 		var data = chartData.get(sensorType);
 		var arrayLength = data.length;
 		for (var i = 0; i < arrayLength; i++) {
-			dataTable.addRow([new Date(data[i][0]), data[i][1]]);
+			dataTable.addRow([new Date(data[i][0] * 100000), data[i][1]]);
 		}
 		var formatDate = new google.visualization.DateFormat({pattern: 'dd.MM.yyyy HH:mm:ss'});
 		formatDate.format(dataTable, 0);
 		var chart = new google.visualization.LineChart(document.getElementById(sensorType));
-
+		var formatString = "dd.MM.";
+		if (getPeriod() === "24") {
+			formatString = "HH:mm";
+		}
+		var minDate = new Date();
+		minDate.setHours(minDate.getHours() - parseInt(getPeriod()));
+		
+		var gridCount;
+		if ($(window).width() < 480) {
+			gridCount = 5;
+		}
+		else {
+			gridCount = 8;
+		}
+		
 		var options = {
 			legend : {
 				position : 'none'
@@ -97,10 +130,14 @@
 			},
 			hAxis : {
 				gridlines : {
-					count : 5,
+					count : gridCount,
 					color: 'none',
 				},
-		        format: 'HH:mm'
+			    viewWindow: {
+			        min: minDate,
+			        max: new Date()
+			    },
+		        format: formatString
 			}
 		};
 
@@ -108,25 +145,18 @@
 	}
 	
 	function checkDone() {
-		var allDone = true;
-		loadingStatus.forEach(function (item, key, mapObj) {  
-			if (loadingStatus.get(key) == false) {
-				allDone = false
-			}
-		});
-		if (allDone) {
+		if (loadingStatus.size == 0) {
+			lastUpdate = new Date();
+			loadInProgress = false;
 			$("#progressbar").css("display", "none");
+			scheduleNextLoad(TIMEOUT);
 		}
 	}
-
-
 	
-	$( document ).ajaxError(function( event, jqxhr, settings, thrownError ) {
-		console.log(event, jqxhr, settings, thrownError);
-		$("#progressbar").css("display", "none");
-	});
+	function scheduleNextLoad(timeout) {
+		reloadEvent = setTimeout(loadData, timeout);
+	}
 
-	
 	$(window).resize(function() {
 		chartData.forEach(function (value, sensorType, mapObj) {
 			drawChart(sensorType);
@@ -156,19 +186,19 @@
 	    return document[prop];
 	}
 	
-	// use the property name to generate the prefixed event name
-	var visProp = getHiddenProp();
-	if (visProp) {
-	  var evtname = visProp.replace(/[H|h]idden/,'') + 'visibilitychange';
-	  document.addEventListener(evtname, visChange);
-	}
-
 	function visChange() {
+		if (loadInProgress) {
+			return;
+		}
 	   if (isHidden()) {
-		   doUpdate = false
+		   clearTimeout(reloadEvent);
 	   } else {
-		   doUpdate = true;
-		   loadData();
+		   diff = new Date() - lastUpdate;
+		   if (diff > TIMEOUT) {
+			   loadData();
+		   } else {
+			   scheduleNextLoad(TIMEOUT - diff);
+		   }
 	   }
 	   var txtFld = document.getElementById('visChangeText');
 
@@ -179,6 +209,40 @@
 	         txtFld.value += "Tab Visible!\n";
 	   }
 	}
+	
+	function updateActiveTab() {
+		var linkToCurrentPeriod = $('a[href="#' + getPeriod() + '"]');
+		$(".mdc-tab").removeClass("mdc-tab--active");
+		$(linkToCurrentPeriod).addClass("mdc-tab--active");
+	}
+	
+	window.onhashchange = function() {
+		//change active tabb
+		updateActiveTab();
+		
+		//abort all running ajax requests
+		loadingStatus.forEach(function(value, key) {
+			console.log("aborting " + key);  
+			value.abort();
+		});
+		
+		updateAllCharts();
+	}
+	
+	$(window).ready(function() {
+		var visProp = getHiddenProp();
+		if (visProp) {
+		  var evtname = visProp.replace(/[H|h]idden/,'') + 'visibilitychange';
+		  document.addEventListener(evtname, visChange);
+		}
+		google.charts.load('current', {
+			'packages' : [ 'corechart' ]
+		});
+
+		google.charts.setOnLoadCallback(loadData);
+		updateActiveTab();
+	});
+
 </script>
 <style>
 .my-bordered-list {
@@ -218,8 +282,8 @@
 	</div>				
 	  
 	</header>
-	<main class="mdc-toolbar-fixed-adjust">
 		
+	<main class="mdc-toolbar-fixed-adjust">
 	<div class="mdc-layout-grid">
 		<div class="mdc-layout-grid__inner">
 			<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
@@ -262,6 +326,13 @@
 			</div>
 		</div>
 	</div>
+		<nav id="basic-tab-bar" class="mdc-tab-bar">
+		  <a class="mdc-tab mdc-tab--active" href="#24">Tag</a>
+		  <a class="mdc-tab" href="#168">Woche</a>
+		  <a class="mdc-tab" href="#672">Monat</a>
+		  <a class="mdc-tab" href="#8760">Jahr</a>
+		  <span class="mdc-tab-bar__indicator"></span>
+		</nav>
 	<div class="mdc-layout-grid">
 		<div class="mdc-layout-grid__inner">
 			<div class="mdc-layout-grid__cell  mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
@@ -282,6 +353,16 @@
 				<div class="mdc-card" id="p1"></div>
 			</div>
 		</div>
+	</div>
+	
+	<div class="mdc-snackbar"
+	     aria-live="assertive"
+	     aria-atomic="true"
+	     aria-hidden="true">
+	  <div class="mdc-snackbar__text">Ein Fehler ist aufgetreten</div>
+	  <div class="mdc-snackbar__action-wrapper">
+	    <button type="button" class="mdc-snackbar__action-button"></button>
+	  </div>
 	</div>
 	</main>
 

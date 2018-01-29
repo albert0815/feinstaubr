@@ -11,3 +11,8 @@
 - durchschnitt / höchst / niedrigstwert
 - daten von ajax speichern für redraw der diagramme bei resize
 - build prozess unterschied in persistence.xml
+- add sensor id to hash
+- setup google container
+- fehler wenn sensor nicht da ist
+- anzeige der diagramme/current nur wenn daten da sind (material motion slide in)
+- return all in one json
