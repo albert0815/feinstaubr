@@ -15,7 +15,7 @@
 	var reloadEvent;
 	var lastUpdate;
 	var loadInProgress;
-	const TIMEOUT=1200000;
+	const TIMEOUT=120000;
 	var chartData = new Map();
 	chartData.set("temperature", null);
 	chartData.set("humidity", null);
@@ -235,20 +235,6 @@
 		updateAllCharts();
 	}
 	
-	$(window).ready(function() {
-		var visProp = getHiddenProp();
-		if (visProp) {
-		  var evtname = visProp.replace(/[H|h]idden/,'') + 'visibilitychange';
-		  document.addEventListener(evtname, visChange);
-		}
-		google.charts.load('current', {
-			'packages' : [ 'corechart' ]
-		});
-
-		google.charts.setOnLoadCallback(loadData);
-		updateActiveTab();
-	});
-
 </script>
 <style>
 .my-bordered-list {
@@ -332,8 +318,8 @@
 			</div>
 		</div>
 	</div>
-		<nav id="basic-tab-bar" class="mdc-tab-bar">
-		  <a class="mdc-tab mdc-tab--active" href="#24">Tag</a>
+		<nav id="basic-tab-bar" class="mdc-tab-bar" data-mdc-auto-init="MDCTabBar">
+		  <a class="mdc-tab" href="#24">Tag</a>
 		  <a class="mdc-tab" href="#168">Woche</a>
 		  <a class="mdc-tab" href="#672">Monat</a>
 		  <a class="mdc-tab" href="#8760">Jahr</a>
@@ -375,6 +361,17 @@
 	<script
 		src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
 	<script>
+		var visProp = getHiddenProp();
+		if (visProp) {
+		  var evtname = visProp.replace(/[H|h]idden/,'') + 'visibilitychange';
+		  document.addEventListener(evtname, visChange);
+		}
+		google.charts.load('current', {
+			'packages' : [ 'corechart' ]
+		});
+	
+		google.charts.setOnLoadCallback(loadData);
+		updateActiveTab();
 		window.mdc.autoInit();
 	</script>
 </body>
