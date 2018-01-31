@@ -134,6 +134,7 @@ public class Sensor {
 		
 		for (Object[] o : result) {
 			Timestamp timestamp = (Timestamp)o[0];
+			LOGGER.info("timestamp " + timestamp);
 
 			if (o[1] != null) {
 				temperatureJson.add(Json.createArrayBuilder().add(timestamp.getTime() / 100000).add((BigDecimal)o[1]));
