@@ -19,9 +19,11 @@
 
 # create google cluster
 https://cloud.google.com/kubernetes-engine/docs/tutorials/persistent-disk?hl=de
+https://codelabs.developers.google.com/codelabs/cloud-persistent-disk/index.html?index=..%2F..%2Findex#7
 
 gcloud container clusters get-credentials cluster-1 --zone us-central1-a
 gcloud container clusters list
 gcloud compute disks create --size 200GB postgres-disk
 kubectl create -f postgres.yaml
 gcloud compute instances attach-disk cluster-1 --disk postgres-disk
+gcloud compute ssh gke-cluster-1-default-pool-39c0ef9a-pd0v
