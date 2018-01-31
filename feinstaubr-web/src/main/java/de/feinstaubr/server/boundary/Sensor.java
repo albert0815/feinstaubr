@@ -56,18 +56,18 @@ public class Sensor {
 	@POST
 	public void save(JsonObject o) {
 		SensorMeasurement measurement = new SensorMeasurement();
+		Date now = new Date();
 		if (o.containsKey("date")) {
 			// for testing purposes, this is not provided by the sensor
 			try {
 				Date parse = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(o.getString("date"));
-				LOGGER.info(o.getString("date") + " - " + parse.getTimezoneOffset());
-				measurement.setDate(parse);
 			} catch (ParseException e) {
-				measurement.setDate(new Date());
+				measurement.setDate(now);
 			}
 		} else {
-			measurement.setDate(new Date());
+			measurement.setDate(now);
 		}
+		LOGGER.info("date: " + now + " - " + now.getTimezoneOffset());
 		measurement.setSensorId(o.getString("esp8266id"));
 		if (o.containsKey("software_version")) {
 			measurement.setSoftwareVersion(o.getString("software_version"));
@@ -126,7 +126,10 @@ public class Sensor {
 //		Query query = em.createNativeQuery("select TIMESTAMP WITHout TIME ZONE 'epoch' + INTERVAL '1 second' * round((extract('epoch' from date) / ?1) * ?2), trunc(avg(temperatur),1) as avg_temperature, trunc(avg(humidity),1) as avg_humidity, trunc(avg(p1),1) as avg_p1, trunc(avg(p2),1) as avg_p2 from SensorMeasurement where date >= date_trunc('day', cast(now() as timestamp) - ?3  * interval '1 hour') group by 1 order by 1");
 		query.setParameter(1, INTERVAL_MAP.get(period)[1]);
 		query.setParameter(2, INTERVAL_MAP.get(period)[1]);
-		query.setParameter(3, getPeriodStartDate(period));
+		Calendar periodStartDate = getPeriodStartDate(period);
+		LOGGER.info("periodstart " + periodStartDate.getTime());
+		LOGGER.info("periodstart " + periodStartDate.getTimeZone());
+		query.setParameter(3, periodStartDate);
 		List<Object[]> result = query.getResultList();
 		
 		JsonArrayBuilder temperatureJson = Json.createArrayBuilder();
