@@ -16,3 +16,12 @@
 - fehler wenn sensor nicht da ist
 - anzeige der diagramme/current nur wenn daten da sind (material motion slide in)
 - return all in one json
+
+# create google cluster
+https://cloud.google.com/kubernetes-engine/docs/tutorials/persistent-disk?hl=de
+
+gcloud container clusters get-credentials cluster-1 --zone us-central1-a
+gcloud container clusters list
+gcloud compute disks create --size 200GB postgres-disk
+kubectl create -f postgres.yaml
+gcloud compute instances attach-disk cluster-1 --disk postgres-disk
