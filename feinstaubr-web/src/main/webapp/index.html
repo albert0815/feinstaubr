@@ -14,15 +14,9 @@
 <script type="text/javascript">
 	var reloadEvent;
 	var lastUpdate;
-	var loadInProgress;
-	const TIMEOUT=120000;
-	var chartData = new Map();
-	chartData.set("temperature", null);
-	chartData.set("humidity", null);
-	chartData.set("p1", null);
-	chartData.set("p2", null);
-	
-	var loadingStatus = new Map();
+	const TIMEOUT=900000;
+	var chartData;
+	var jqXHR;
 	
 	var labels = new Map();
 	labels.set("temperature", "Temperatur in °C");
@@ -32,35 +26,50 @@
 
 	
 	function loadData() {
-		loadInProgress = true;
-		
-		updateCurrent();
-		updateAllCharts();
-	}
-
-	function updateCurrent() {
 		$("#progressbar").css("display", "block");
-		var jqXHR = $.getJSON("rest/sensor/7620363/")
+		jqXHR = $.getJSON("rest/sensor/7620363/" + getPeriod())
 			.done(function(data) {
-				var d = new Date(data.date); 
-				$("#current_date").html(
-						pad(d.getDate()) + "." + pad(d.getMonth() + 1) + "." + d.getFullYear() + 
-						" " + 
-						pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()));
-				
-				$("#current_temperature").html(data.temperatur + " °C");
-				$("#current_humidity").html(data.humidity + " %");
-				$("#current_p2").html("(PM2.5) " + data.p2 + " µg/m³");
-				$("#current_p1").html("(PM10) " + data.p1 + " µg/m³");
+				chartData = data;
+				drawCurrentMinMax();
+				drawCharts();
 			}).fail(function(jqXHR, status, error) {
 				if (jqXHR.statusText !== "abort") {
+					$(".mdc-snackbar__text").html("Ein Fehler ist aufgetreten - " + error);
 					$(".mdc-snackbar").addClass("mdc-snackbar--active");
 				}
 			}).always(function() {
-				loadingStatus.delete("current");
-				checkDone();
+				jqXHR = undefined;
+				lastUpdate = new Date();
+				$("#progressbar").css("display", "none");
 			});
-		loadingStatus.set("current", jqXHR);
+	}
+
+	function drawCurrentMinMax() {
+		$.each(chartData.details, function (detailType, values) {
+			for (var key in values) {
+				var value = values[key];
+				if (key === "date") {
+					var d = new Date(value); 
+					value = pad(d.getDate()) + "." + pad(d.getMonth() + 1) + "." + d.getFullYear() + 
+						" " + 
+						pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+				} else {
+					if (typeof value === 'number') {
+						value = value.toLocaleString();
+					}
+					if (key === "temperature" || detailType === "temperature") {
+						value = value + " °C";
+					}
+					if (key === "humidity" || detailType === "humidity") {
+						value = value + " %";
+					}
+					if (key === "p1" || detailType === "p1" || key === "p2" || detailType === "p2") {
+						value = value + " µg/m³";
+					}
+				}
+				$("#" + detailType + " .val_" + key).html(value);
+			}
+		});
 	}
 	
 	function pad(n) {
@@ -70,106 +79,97 @@
 	function getPeriod() {
 		var period = location.hash.substr(1);
 		if (!period) {
-			period = "24";
+			period = "day";
 		}
 		return period;
 	}
 
-	function updateAllCharts() {
-		$("#progressbar").css("display", "block");
-		chartData.forEach(function (value, sensorType, mapObj) {
-			var jqXHR = $.getJSON("rest/sensor/7620363/" + getPeriod() + "/" + sensorType)
-			.done(function(data) {
-				chartData.set(sensorType, data);
-				drawChart(sensorType);
-			}).fail(function(jqXHR, status, error) {
-				if (jqXHR.statusText !== "abort") {
-					$(".mdc-snackbar").addClass("mdc-snackbar--active");
-				}
-			}).always(function() {
-				loadingStatus.delete(sensorType);
-				checkDone();
-			});
-			loadingStatus.set(sensorType, jqXHR);
-		});
-	}
-	
-	function drawChart(sensorType) {
-		var dataTable = new google.visualization.DataTable();
-		dataTable.addColumn('datetime', 'Time');
-		dataTable.addColumn('number', labels.get(sensorType));
-		var data = chartData.get(sensorType);
-		var arrayLength = data.length;
-		for (var i = 0; i < arrayLength; i++) {
-			dataTable.addRow([new Date(data[i][0] * 100000), data[i][1]]);
-		}
-		var formatDate;
-		if (getPeriod() === "8760") {
-			formatDate = new google.visualization.DateFormat({pattern: 'dd.MM.yyyy'});
-		} else {
-			formatDate = new google.visualization.DateFormat({pattern: 'dd.MM.yyyy HH:mm'});
-		}
-		formatDate.format(dataTable, 0);
-		var chart = new google.visualization.LineChart(document.getElementById(sensorType));
-		var formatString = "dd.MM.";
-		if (getPeriod() === "24") {
-			formatString = "HH:mm";
-		}
-		var minDate = new Date();
-		minDate.setHours(minDate.getHours() - parseInt(getPeriod()));
-		
-		var gridCount;
-		if ($(window).width() < 480) {
-			gridCount = 5;
-		}
-		else {
-			gridCount = 8;
-		}
-		
-		var options = {
-			legend : {
-				position : 'none'
-			},
-			curveType : 'function',
-			vAxis : {
-				minValue : 0,
-			},
-			hAxis : {
-				gridlines : {
-					count : gridCount,
-					color: 'none',
-				},
-			    viewWindow: {
-			        min: minDate,
-			        max: new Date()
-			    },
-		        format: formatString
+	function drawCharts() {
+		$.each(chartData.charts, function (sensorType, data) {
+			var dataTable = new google.visualization.DataTable();
+			dataTable.addColumn('datetime', 'Time');
+			dataTable.addColumn('number', labels.get(sensorType));
+			var arrayLength = data.length;
+			for (var i = 0; i < arrayLength; i++) {
+				var xAxisDate = new Date(data[i][0] * 100000);
+				var yValue = data[i][1];
+				dataTable.addRow([xAxisDate, yValue]);
 			}
-		};
-
-		chart.draw(dataTable, options);
-	}
+			var formatDate;
+			if (getPeriod() === "year") {
+				formatDate = new google.visualization.DateFormat({pattern: 'dd.MM.yyyy'});
+			} else {
+				formatDate = new google.visualization.DateFormat({pattern: 'dd.MM.yyyy HH:mm'});
+			}
+			formatDate.format(dataTable, 0);
+			var chart = new google.visualization.LineChart(document.getElementById(sensorType));
+			var formatString = "dd.MM.";
+			if (getPeriod() === "day") {
+				formatString = "HH:mm";
+			}
+			var minDate = new Date();
+			minDate.setHours(0);
+			minDate.setMinutes(0);
+			minDate.setSeconds(0);
+			minDate.setMilliseconds(0);
+			
+			switch (getPeriod()) {
+				case "week": minDate.setDate(minDate.getDate() - 7); break;
+				case "month": minDate.setDate(minDate.getDate() - 28); break;
+				case "year": minDate.setDate(minDate.getDate() - 365); break;
+			}
+			
+			var gridCount;
+			if ($(window).width() < 720) {
+				gridCount = 5;
+			}
+			else {
+				gridCount = 8;
+			}
+			
+			var options = {
+			        width: '100%',
+			        height: '100%',
+			        chartArea: {
+			            left: "10%",
+			            top: "7%",
+			            height: "80%",
+			            width: "80%"
+			        },
+			        focusTarget : 'category',
+				legend : {
+					position : 'none'
+				},
+				curveType : 'function',
+				vAxis : {
+					minValue : 0,
+				},
+				hAxis : {
+					gridlines : {
+						count : gridCount,
+					},
+				    viewWindow: {
+				        min: minDate,
+				        max: new Date()
+				    },
+			        format: formatString
+				}
+			};
 	
-	function checkDone() {
-		if (loadingStatus.size == 0) {
-			lastUpdate = new Date();
-			loadInProgress = false;
-			$("#progressbar").css("display", "none");
-			scheduleNextLoad(TIMEOUT);
-		}
+			chart.draw(dataTable, options);
+		});
 	}
 	
 	function scheduleNextLoad(timeout) {
 		reloadEvent = setTimeout(loadData, timeout);
 	}
 
-	$(window).resize(function() {
-		chartData.forEach(function (value, sensorType, mapObj) {
-			drawChart(sensorType);
-		});
+	$(window).on("resize", function (event) {
+		drawCharts();
 	});
 	
 	function getHiddenProp(){
+		//FIXME replace with function from google material components
 	    var prefixes = ['webkit','moz','ms','o'];
 	    
 	    // if 'hidden' is natively supported just return it
@@ -193,7 +193,7 @@
 	}
 	
 	function visChange() {
-		if (loadInProgress) {
+		if (jqXHR) {
 			return;
 		}
 	   if (isHidden()) {
@@ -227,12 +227,11 @@
 		updateActiveTab();
 		
 		//abort all running ajax requests
-		loadingStatus.forEach(function(value, key) {
-			console.log("aborting " + key);  
-			value.abort();
-		});
+		if (jqXHR) {
+			jqXHR.abort();
+		}
 		
-		updateAllCharts();
+		loadData();
 	}
 	
 </script>
@@ -279,39 +278,40 @@
 	<div class="mdc-layout-grid">
 		<div class="mdc-layout-grid__inner">
 			<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
-				<h3>Aktuell</h3>
 				<div class="mdc-card">
-				<ul class="mdc-list mdc-list--dense">
+				<section class="mdc-card__primary">
+					<h1 class="mdc-card__title mdc-card__title--large">Aktuell</h1>
+				</section>
+				<ul class="mdc-list mdc-list--dense" id="current">
 					<li class="mdc-list-item">
 						<span class="mdc-list-item__graphic">
 							<i class="material-icons" aria-hidden="true">access_time</i>
 						</span>
-						<span class="mdc-list-item__text" id="current_date">
-						</span>
+						<span class="mdc-list-item__text val_date"></span>
 					</li>
 					<li class="mdc-list-item">
 						<span class="mdc-list-item__graphic">
 							<i class="material-icons" aria-hidden="true">wb_sunny</i>
 						</span>
-						<span class="mdc-list-item__text" id="current_temperature"></span>
+						<span class="mdc-list-item__text val_temperature"></span>
 					</li>
 					<li class="mdc-list-item">
 						<span class="mdc-list-item__graphic">
 							<i class="material-icons" aria-hidden="true">grain</i>
 						</span>
-						<span class="mdc-list-item__text" id="current_humidity"></span>
+						<span class="mdc-list-item__text val_humidity"></span>
 					</li>
 					<li class="mdc-list-item">
 						<span class="mdc-list-item__graphic">
 							<i class="material-icons" aria-hidden="true">location_city</i>
 						</span>
-						<span class="mdc-list-item__text" id="current_p2"></span>
+						<span class="mdc-list-item__text val_p2"></span>
 					</li>
 					<li class="mdc-list-item">
 						<span class="mdc-list-item__graphic">
 							<i class="material-icons" aria-hidden="true">location_city</i>
 						</span>
-						<span class="mdc-list-item__text" id="current_p1"></span>
+						<span class="mdc-list-item__text val_p1"></span>
 					</li>
 				</ul>
 				</div>
@@ -319,30 +319,137 @@
 		</div>
 	</div>
 		<nav id="basic-tab-bar" class="mdc-tab-bar" data-mdc-auto-init="MDCTabBar">
-		  <a class="mdc-tab" href="#24">Tag</a>
-		  <a class="mdc-tab" href="#168">Woche</a>
-		  <a class="mdc-tab" href="#672">Monat</a>
-		  <a class="mdc-tab" href="#8760">Jahr</a>
+		  <a class="mdc-tab" href="#day">Tag</a>
+		  <a class="mdc-tab" href="#week">Woche</a>
+		  <a class="mdc-tab" href="#month">Monat</a>
+		  <a class="mdc-tab" href="#year">Jahr</a>
 		  <span class="mdc-tab-bar__indicator"></span>
 		</nav>
 	<div class="mdc-layout-grid">
 		<div class="mdc-layout-grid__inner">
 			<div class="mdc-layout-grid__cell  mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
-				<h3>Temperatur</h3>
-				<div class="mdc-card" id="temperature">
+				<div class="mdc-card">
+					<section class="mdc-card__primary">
+						<h1 class="mdc-card__title mdc-card__title--large">Temperatur</h1>
+					</section>
+					<div id="temperature"></div>
+					<section class="mdc-card__supporting-text">
+					<ul class="mdc-list mdc-list--dense" id="temperature">
+						<li class="mdc-list-item">
+							<span class="mdc-list-item__graphic">
+								<i class="material-icons" aria-hidden="true">arrow_upward</i>
+							</span>
+							<span class="mdc-list-item__text val_max">
+							</span>
+						</li>
+						<li class="mdc-list-item">
+							<span class="mdc-list-item__graphic">
+								<i class="material-icons" aria-hidden="true">arrow_forward</i>
+							</span>
+							<span class="mdc-list-item__text val_avg"></span>
+						</li>
+						<li class="mdc-list-item">
+							<span class="mdc-list-item__graphic">
+								<i class="material-icons" aria-hidden="true">arrow_downward</i>
+							</span>
+							<span class="mdc-list-item__text val_min"></span>
+						</li>
+					</ul>
+					</section>
 				</div>
 			</div>
 			<div class="mdc-layout-grid__cell   mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
-				<h3>Luftfeuchtigkeit</h3>
-				<div class="mdc-card" id="humidity"></div>
+				<div class="mdc-card">
+					<section class="mdc-card__primary">
+						<h1 class="mdc-card__title mdc-card__title--large">Luftfeuchtigkeit</h1>
+					</section>
+					<div id="humidity"></div>
+					<section class="mdc-card__supporting-text">
+					<ul class="mdc-list mdc-list--dense" id="humidity">
+						<li class="mdc-list-item">
+							<span class="mdc-list-item__graphic">
+								<i class="material-icons" aria-hidden="true">arrow_upward</i>
+							</span>
+							<span class="mdc-list-item__text val_max">
+							</span>
+						</li>
+						<li class="mdc-list-item">
+							<span class="mdc-list-item__graphic">
+								<i class="material-icons" aria-hidden="true">arrow_forward</i>
+							</span>
+							<span class="mdc-list-item__text val_avg"></span>
+						</li>
+						<li class="mdc-list-item">
+							<span class="mdc-list-item__graphic">
+								<i class="material-icons" aria-hidden="true">arrow_downward</i>
+							</span>
+							<span class="mdc-list-item__text val_min"></span>
+						</li>
+					</ul>
+					</section>
+				</div>
 			</div>
 			<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
-				<h3>PM2.5</h3>
-				<div class="mdc-card" id="p2"></div>
+				<div class="mdc-card">
+					<section class="mdc-card__primary">
+						<h1 class="mdc-card__title mdc-card__title--large">PM2.5</h1>
+					</section>
+					<div id="p2"></div>
+					<section class="mdc-card__supporting-text">
+					<ul class="mdc-list mdc-list--dense" id="p2">
+						<li class="mdc-list-item">
+							<span class="mdc-list-item__graphic">
+								<i class="material-icons" aria-hidden="true">arrow_upward</i>
+							</span>
+							<span class="mdc-list-item__text val_max">
+							</span>
+						</li>
+						<li class="mdc-list-item">
+							<span class="mdc-list-item__graphic">
+								<i class="material-icons" aria-hidden="true">arrow_forward</i>
+							</span>
+							<span class="mdc-list-item__text val_avg"></span>
+						</li>
+						<li class="mdc-list-item">
+							<span class="mdc-list-item__graphic">
+								<i class="material-icons" aria-hidden="true">arrow_downward</i>
+							</span>
+							<span class="mdc-list-item__text val_min"></span>
+						</li>
+					</ul>
+					</section>
+				</div>
 			</div>
 			<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
-				<h3>PM10</h3>
-				<div class="mdc-card" id="p1"></div>
+				<div class="mdc-card">
+					<section class="mdc-card__primary">
+						<h1 class="mdc-card__title mdc-card__title--large">PM10</h1>
+					</section>
+					<div id="p1"></div>
+					<section class="mdc-card__supporting-text">
+					<ul class="mdc-list mdc-list--dense" id="p1">
+						<li class="mdc-list-item">
+							<span class="mdc-list-item__graphic">
+								<i class="material-icons" aria-hidden="true">arrow_upward</i>
+							</span>
+							<span class="mdc-list-item__text val_max">
+							</span>
+						</li>
+						<li class="mdc-list-item">
+							<span class="mdc-list-item__graphic">
+								<i class="material-icons" aria-hidden="true">arrow_forward</i>
+							</span>
+							<span class="mdc-list-item__text val_avg"></span>
+						</li>
+						<li class="mdc-list-item">
+							<span class="mdc-list-item__graphic">
+								<i class="material-icons" aria-hidden="true">arrow_downward</i>
+							</span>
+							<span class="mdc-list-item__text val_min"></span>
+						</li>
+					</ul>
+					</section>
+				</div>
 			</div>
 		</div>
 	</div>
