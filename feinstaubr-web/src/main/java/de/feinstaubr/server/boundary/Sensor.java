@@ -24,7 +24,6 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.ws.rs.GET;
@@ -121,10 +120,10 @@ public class Sensor {
 			throw new RuntimeException("unknown period");
 		}
 
-		Query query = em.createNativeQuery("select to_timestamp(floor((extract('epoch' from date) / ?1 )) * ?2), trunc(avg(temperatur),1) as avg_temperature, trunc(avg(humidity),1) as avg_humidity, trunc(avg(p1),1) as avg_p1, trunc(avg(p2),1) as avg_p2 from SensorMeasurement where date > ?3 group by 1 order by 1");
+		Query query = em.createNativeQuery("select to_timestamp(floor((extract('epoch' from date) / ?1 )) * ?2), trunc(avg(temperatur),1) as avg_temperature, trunc(avg(humidity),1) as avg_humidity, trunc(avg(p1),1) as avg_p1, trunc(avg(p2),1) as avg_p2 from SensorMeasurement where date >= date_trunc('day', now() - ?3  * interval '1 hour') group by 1 order by 1");
 		query.setParameter(1, INTERVAL_MAP.get(period)[1]);
 		query.setParameter(2, INTERVAL_MAP.get(period)[1]);
-		query.setParameter(3, getPeriodStartDate(period));
+		query.setParameter(3, INTERVAL_MAP.get(period)[0]);
 		List<Object[]> result = query.getResultList();
 		
 		JsonArrayBuilder temperatureJson = Json.createArrayBuilder();
