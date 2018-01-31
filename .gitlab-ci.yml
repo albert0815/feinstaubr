@@ -39,5 +39,5 @@ deploy:
     - docker network create --driver bridge feinstaub-network
     - docker run --detach --name feinstaubr-web --network=feinstaub-network feinstaubr-web
     - mkdir -p /docker-volumes/feinstaub/db
-    - docker run --detach --name feinstaubr-db --network=feinstaub-network --volume /docker-volumes/feinstaub/db/postgres-data:/var/lib/postgresql/data feinstaubr-db
+    - docker run --detach --name feinstaubr-db --network=feinstaub-network --volume /docker-volumes/feinstaub/db:/var/lib/postgresql/data feinstaubr-db
     - docker network connect web feinstaubr-web || true
