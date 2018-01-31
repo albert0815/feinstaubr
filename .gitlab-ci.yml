@@ -30,13 +30,13 @@ deploy:
     - cd feinstaubr-web
     - docker build . -t feinstaubr-web
     - cd ..
-#    - cd feinstaub-db
-#    - docker build . -t feinstaubr-db
-#    - cd ..
+    - cd feinstaub-db
+    - docker build . -t feinstaubr-db
+    - cd ..
     - docker stop feinstaubr-web && docker rm feinstaubr-web || true
-#    - docker stop feinstaubr-db && docker rm feinstaubr-db || true
+    - docker stop feinstaubr-db || true
 #    - docker network rm feinstaub-network || true
 #    - docker network create --driver bridge feinstaub-network 
     - docker run --detach --name feinstaubr-web --network=feinstaub-network feinstaubr-web 
-#    - docker run --detach --name feinstaubr-db --network=feinstaub-network feinstaubr-db
+    - docker run --detach --name feinstaubr-db --network=feinstaub-network feinstaubr-db
     - docker network connect web feinstaubr-web || true
