@@ -67,7 +67,6 @@ public class Sensor {
 		} else {
 			measurement.setDate(now);
 		}
-		LOGGER.info("date: " + now + " - " + now.getTimezoneOffset());
 		measurement.setSensorId(o.getString("esp8266id"));
 		if (o.containsKey("software_version")) {
 			measurement.setSoftwareVersion(o.getString("software_version"));
@@ -127,8 +126,6 @@ public class Sensor {
 		query.setParameter(1, INTERVAL_MAP.get(period)[1]);
 		query.setParameter(2, INTERVAL_MAP.get(period)[1]);
 		Calendar periodStartDate = getPeriodStartDate(period);
-		LOGGER.info("periodstart " + periodStartDate.getTime());
-		LOGGER.info("periodstart " + periodStartDate.getTimeZone());
 		query.setParameter(3, periodStartDate);
 		List<Object[]> result = query.getResultList();
 		
@@ -140,8 +137,6 @@ public class Sensor {
 		for (Object[] o : result) {
 			Timestamp timestamp = (Timestamp)o[0];
 			
-			LOGGER.info("timestamp " + timestamp + " - default time zone " + java.util.TimeZone.getDefault() + " - " + timestamp.getTimezoneOffset());
-
 			if (o[1] != null) {
 				temperatureJson.add(Json.createArrayBuilder().add(timestamp.getTime() / 100000).add((BigDecimal)o[1]));
 			}
