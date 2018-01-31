@@ -59,7 +59,9 @@ public class Sensor {
 		if (o.containsKey("date")) {
 			// for testing purposes, this is not provided by the sensor
 			try {
-				measurement.setDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(o.getString("date")));
+				Date parse = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(o.getString("date"));
+				LOGGER.info(o.getString("date") + " - " + parse.getTimezoneOffset());
+				measurement.setDate(parse);
 			} catch (ParseException e) {
 				measurement.setDate(new Date());
 			}
@@ -120,11 +122,11 @@ public class Sensor {
 			throw new RuntimeException("unknown period");
 		}
 
-		Query query = em.createNativeQuery("select to_timestamp(floor((extract('epoch' from cast(date as timestamp with time zone)) / ?1 )) * ?2) AT TIME ZONE 'UTC', trunc(avg(temperatur),1) as avg_temperature, trunc(avg(humidity),1) as avg_humidity, trunc(avg(p1),1) as avg_p1, trunc(avg(p2),1) as avg_p2 from SensorMeasurement where date >= date_trunc('day', cast(now() as timestamp) - ?3  * interval '1 hour') group by 1 order by 1");
+		Query query = em.createNativeQuery("select to_timestamp(floor((extract('epoch' from cast(date as timestamp with time zone)) / ?1 )) * ?2) AT TIME ZONE 'UTC', trunc(avg(temperatur),1) as avg_temperature, trunc(avg(humidity),1) as avg_humidity, trunc(avg(p1),1) as avg_p1, trunc(avg(p2),1) as avg_p2 from SensorMeasurement where date >= ?3 group by 1 order by 1");
 //		Query query = em.createNativeQuery("select TIMESTAMP WITHout TIME ZONE 'epoch' + INTERVAL '1 second' * round((extract('epoch' from date) / ?1) * ?2), trunc(avg(temperatur),1) as avg_temperature, trunc(avg(humidity),1) as avg_humidity, trunc(avg(p1),1) as avg_p1, trunc(avg(p2),1) as avg_p2 from SensorMeasurement where date >= date_trunc('day', cast(now() as timestamp) - ?3  * interval '1 hour') group by 1 order by 1");
 		query.setParameter(1, INTERVAL_MAP.get(period)[1]);
 		query.setParameter(2, INTERVAL_MAP.get(period)[1]);
-		query.setParameter(3, INTERVAL_MAP.get(period)[0]);
+		query.setParameter(3, getPeriodStartDate(period));
 		List<Object[]> result = query.getResultList();
 		
 		JsonArrayBuilder temperatureJson = Json.createArrayBuilder();
@@ -134,7 +136,8 @@ public class Sensor {
 		
 		for (Object[] o : result) {
 			Timestamp timestamp = (Timestamp)o[0];
-			LOGGER.info("timestamp " + timestamp);
+			
+			LOGGER.info("timestamp " + timestamp + " - default time zone " + java.util.TimeZone.getDefault() + " - " + timestamp.getTimezoneOffset());
 
 			if (o[1] != null) {
 				temperatureJson.add(Json.createArrayBuilder().add(timestamp.getTime() / 100000).add((BigDecimal)o[1]));
