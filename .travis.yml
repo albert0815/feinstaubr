@@ -1,0 +1,9 @@
+language: java
+
+sudo: enabled
+
+services:
+- docker
+
+before_script: cd feinstaubr-web
+
