@@ -37,7 +37,7 @@ deploy:
     - docker stop feinstaubr-db && docker rm feinstaubr-db || true
     - docker network rm feinstaub-network || true
     - docker network create --driver bridge feinstaub-network
-    - docker run --detach --name feinstaubr-web --network=feinstaub-network feinstaubr-web
+    - docker run --detach --name feinstaubr-web --network=feinstaub-network -e POSTGRES_DB_HOST=feinstaub-db -e POSTGRES_DB_USER=feinstaub -e POSTGRES_DB_PASSWORD=feinstaub feinstaubr-web
     - mkdir -p /docker-volumes/feinstaub/db
     - docker run --detach --name feinstaubr-db --network=feinstaub-network --volume /docker-volumes/feinstaub/db:/var/lib/postgresql/data feinstaubr-db
     - docker network connect web feinstaubr-web || true
