@@ -3,20 +3,32 @@ language: java
 sudo: enabled
 
 services:
-  - docker
+- docker
 
 cache:
   directories:
-    - $HOME/.m2
+  - "$HOME/.m2"
 
 jdk:
-  - oraclejdk8
+- oraclejdk8
 
 before_script: cd feinstaubr-web
 
 script:
-  - mvn install
+- mvn install
 
+before_install:
+- openssl aes-256-cbc -K $encrypted_197286d69486_key -iv $encrypted_197286d69486_iv
+  -in gce.json.enc -out gce.json -d
 
 after_success:
-  docker build . -t feinstaubr-web
+  # If the SDK is not already cached, download it and unpack it
+  - if [ ! -d ${HOME}/google-cloud-sdk ]; then
+       curl https://sdk.cloud.google.com | bash;
+    fi
+  - gcloud version
+  - gcloud --quiet components update kubectl
+  - gcloud auth activate-service-account --key-file client-secret.json
+  - gcloud config set project feinstaubr
+  - docker build . -t gcr.io/feinstaubr/feinstaubr-web:latest
+  - gcloud docker -- push gcr.io/feinstaubr/feinstaubr-web:latest
