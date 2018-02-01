@@ -21,6 +21,7 @@ after_success:
 - gcloud config set project feinstaubr
 - docker build . -t gcr.io/feinstaubr/feinstaubr-web:latest
 - gcloud docker -- push gcr.io/feinstaubr/feinstaubr-web:latest
+- gcloud components install kubectl
 - gcloud container clusters get-credentials feinstaubr-cluster --zone europe-west3-a
 - kubectl apply -f kubernetes kubernetes-feinstaubr-deployment.yaml
 
