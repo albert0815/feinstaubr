@@ -17,8 +17,7 @@ after_success:
 - if [ ! -d ${HOME}/google-cloud-sdk ]; then curl https://sdk.cloud.google.com | bash;
   fi
 - gcloud version
-- gcloud --quiet components update kubectl
-- gcloud auth activate-service-account --key-file client-secret.json
+- gcloud auth activate-service-account --key-file gce.json
 - gcloud config set project feinstaubr
 - docker build . -t gcr.io/feinstaubr/feinstaubr-web:latest
 - gcloud docker -- push gcr.io/feinstaubr/feinstaubr-web:latest
