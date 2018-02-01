@@ -4,13 +4,16 @@ services:
 - docker
 cache:
   directories:
-  - $HOME/.m2
+  - ${HOME}/.m2
+  - ${HOME}/google-cloud-sdk
+
 jdk:
 - oraclejdk8
 before_script: cd feinstaubr-web
 script:
 - mvn install
 after_success:
+- export CLOUDSDK_CORE_DISABLE_PROMPTS=1
 - if [ ! -d ${HOME}/google-cloud-sdk ]; then curl https://sdk.cloud.google.com | bash;
   fi
 - gcloud version
