@@ -17,6 +17,11 @@ before_script: cd feinstaubr-web
 script:
 - mvn install
 
+before_install:
+- openssl aes-256-cbc -K $encrypted_e4b7d3b0f372_key -iv $encrypted_e4b7d3b0f372_iv
+  -in gce.json.enc -out gce.json -d
+
+
 after_success:
   # If the SDK is not already cached, download it and unpack it
   - if [ ! -d ${HOME}/google-cloud-sdk ]; then
