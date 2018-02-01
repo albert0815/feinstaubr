@@ -151,7 +151,7 @@
             
                    <datasource jndi-name="java:jboss/jdbc/feinstaub-datasource"
                           pool-name="postgresDS" enabled="true" use-java-context="true">
-                          <connection-url>jdbc:postgresql://feinstaubr-db:5432/feinstaub</connection-url>
+                          <connection-url>jdbc:postgresql://${env.POSTGRES_DB_HOST}/feinstaub</connection-url>
                           <driver-class>org.postgresql.Driver</driver-class>
                           <driver>postgresql</driver>
                           <pool>
@@ -160,8 +160,8 @@
                                 <prefill>true</prefill>
                           </pool>
                           <security>
-                                <user-name>feinstaub</user-name>
-                                <password>feinstaub</password>
+                                <user-name>${env.POSTGRES_DB_USER}</user-name>
+                                <password>${env.POSTGRES_DB_PASSWORD}</password>
                           </security>
                    </datasource>
                    <drivers>
@@ -480,10 +480,11 @@
                 <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
                 <https-listener name="https" socket-binding="https" security-realm="ApplicationRealm" enable-http2="true"/>
                 <host name="default-host" alias="localhost">
-                    <location name="/" handler="welcome-content"/>
-                    <filter-ref name="server-header"/>
-                    <filter-ref name="x-powered-by-header"/>
-                    <http-invoker security-realm="ApplicationRealm"/>
+<!--                 	<rewrite></rewrite> -->
+<!--                     <location name="/" handler="welcome-content"/> -->
+<!--                     <filter-ref name="server-header"/> -->
+<!--                     <filter-ref name="x-powered-by-header"/> -->
+<!--                     <http-invoker security-realm="ApplicationRealm"/> -->
                 </host>
             </server>
             <servlet-container name="default">
