@@ -14,5 +14,9 @@ jdk:
 
 before_script: cd feinstaubr-web
 
+script:
+  - mvn install
+
+
 after_success:
   docker build . -t feinstaubr-web
