@@ -3,7 +3,16 @@ language: java
 sudo: enabled
 
 services:
-- docker
+  - docker
+
+cache:
+  directories:
+    - $HOME/.m2
+
+jdk:
+  - oraclejdk8
 
 before_script: cd feinstaubr-web
 
+after_success:
+  docker build . -t feinstaubr-web
