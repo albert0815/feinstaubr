@@ -20,10 +20,10 @@ after_success:
 - ${HOME}/google-cloud-sdk/bin/gcloud version
 - ${HOME}/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file ../gce.json
 - ${HOME}/google-cloud-sdk/bin/gcloud config set project feinstaubr
-- docker build . -t gcr.io/feinstaubr/feinstaubr-web:latest
+- docker build . -t gcr.io/feinstaubr/feinstaubr-web:1.${TRAVIS_BUILD_NUMBER}
 - ${HOME}/google-cloud-sdk/bin/gcloud docker -- push gcr.io/feinstaubr/feinstaubr-web:latest
 - ${HOME}/google-cloud-sdk/bin/gcloud container clusters get-credentials feinstaubr-cluster --zone europe-west3-a
-- ${HOME}/google-cloud-sdk/bin/kubectl apply -f kubernetes/kubernetes-feinstaubr-deployment.yaml
+- ${HOME}/google-cloud-sdk/bin/kubectl set image deployment feinstaubr feinstaubr=gcr.io/feinstaubr/feinstaubr-web:1.${TRAVIS_BUILD_NUMBER}
 
 
 before_install:
