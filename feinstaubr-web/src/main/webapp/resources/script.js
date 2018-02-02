@@ -53,7 +53,7 @@
 
 				if (values[key].date) {
 					if (getPeriod() === "day") {
-						var d = new Date(); 
+						var d = new Date(values[key].date); 
 						value = value + " (" + pad(d.getHours()) + ":" + pad(d.getMinutes()) + " Uhr)";
 					} else {
 						value = value + " (" + convertDate(values[key].date) + ")";

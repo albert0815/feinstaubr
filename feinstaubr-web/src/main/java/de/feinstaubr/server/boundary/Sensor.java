@@ -210,33 +210,60 @@ public class Sensor {
 		
 		Object[] avg = getAvg(id, period);
 		
+
+		//temperature
 		JsonObjectBuilder detailsTemp = Json.createObjectBuilder();
-		addIfNotNull(detailsTemp, "min", getMinMax(query, criteriaBuilder.desc(root.get(SensorMeasurement_.temperatur))));
-		addIfNotNull(detailsTemp, "max", getMinMax(query, criteriaBuilder.asc(root.get(SensorMeasurement_.temperatur))));
+		SensorMeasurement tempMin = getMinMax(query, criteriaBuilder.asc(root.get(SensorMeasurement_.temperatur)));
+		if (tempMin != null) {
+			detailsTemp.add("min", Json.createObjectBuilder().add("date", tempMin.getDate().getTime()).add("value", tempMin.getTemperatur()));
+		}
+		SensorMeasurement tempMax = getMinMax(query, criteriaBuilder.desc(root.get(SensorMeasurement_.temperatur)));
+		if (tempMax != null) {
+			detailsTemp.add("max", Json.createObjectBuilder().add("date", tempMax.getDate().getTime()).add("value", tempMax.getTemperatur()));
+		}
 		if (avg[0] != null) {
 			detailsTemp.add("avg", Json.createObjectBuilder().add("value", new BigDecimal((Double)avg[0]).setScale(1, RoundingMode.HALF_UP)));
 		}
 		detailJson.add("temperature", detailsTemp);
 
+		//humidity
 		JsonObjectBuilder detailsHum = Json.createObjectBuilder();
-		addIfNotNull(detailsHum, "min", getMinMax(query, criteriaBuilder.desc(root.get(SensorMeasurement_.humidity))));
-		addIfNotNull(detailsHum, "max", getMinMax(query, criteriaBuilder.asc(root.get(SensorMeasurement_.humidity))));
+		SensorMeasurement humMin = getMinMax(query, criteriaBuilder.asc(root.get(SensorMeasurement_.humidity)));
+		if (humMin != null) {
+			detailsHum.add("min", Json.createObjectBuilder().add("date", humMin.getDate().getTime()).add("value", humMin.getHumidity()));
+		}
+		SensorMeasurement humMax = getMinMax(query, criteriaBuilder.desc(root.get(SensorMeasurement_.humidity)));
+		if (humMax != null) {
+			detailsHum.add("max", Json.createObjectBuilder().add("date", humMax.getDate().getTime()).add("value", humMax.getHumidity()));
+		}
 		if (avg[1] != null) {
 			detailsHum.add("avg", Json.createObjectBuilder().add("value", new BigDecimal((Double)avg[1]).setScale(1, RoundingMode.HALF_UP)));
 		}
 		detailJson.add("humidity", detailsHum);
 
 		JsonObjectBuilder detailsP1 = Json.createObjectBuilder();
-		addIfNotNull(detailsP1, "min", getMinMax(query, criteriaBuilder.desc(root.get(SensorMeasurement_.p1))));
-		addIfNotNull(detailsP1, "max", getMinMax(query, criteriaBuilder.asc(root.get(SensorMeasurement_.p1))));
+		SensorMeasurement p1Min = getMinMax(query, criteriaBuilder.asc(root.get(SensorMeasurement_.p1)));
+		if (p1Min != null) {
+			detailsP1.add("min", Json.createObjectBuilder().add("date", p1Min.getDate().getTime()).add("value", p1Min.getP1()));
+		}
+		SensorMeasurement p1Max = getMinMax(query, criteriaBuilder.desc(root.get(SensorMeasurement_.p1)));
+		if (p1Max != null) {
+			detailsP1.add("max", Json.createObjectBuilder().add("date", p1Max.getDate().getTime()).add("value", p1Max.getP1()));
+		}
 		if (avg[2] != null) {
 			detailsP1.add("avg", Json.createObjectBuilder().add("value", new BigDecimal((Double)avg[2]).setScale(1, RoundingMode.HALF_UP)));
 		}
 		detailJson.add("p1", detailsP1);
 
 		JsonObjectBuilder detailsP2 = Json.createObjectBuilder();
-		addIfNotNull(detailsP2, "min", getMinMax(query, criteriaBuilder.desc(root.get(SensorMeasurement_.p2))));
-		addIfNotNull(detailsP2, "max", getMinMax(query, criteriaBuilder.asc(root.get(SensorMeasurement_.p2))));
+		SensorMeasurement p2Min = getMinMax(query, criteriaBuilder.asc(root.get(SensorMeasurement_.p2)));
+		if (p2Min != null) {
+			detailsP2.add("min", Json.createObjectBuilder().add("date", p2Min.getDate().getTime()).add("value", p2Min.getP2()));
+		}
+		SensorMeasurement p2Max = getMinMax(query, criteriaBuilder.desc(root.get(SensorMeasurement_.p2)));
+		if (p1Max != null) {
+			detailsP2.add("max", Json.createObjectBuilder().add("date", p2Max.getDate().getTime()).add("value", p2Max.getP2()));
+		}
 		if (avg[3] != null) {
 			detailsP2.add("avg", Json.createObjectBuilder().add("value", new BigDecimal((Double)avg[3]).setScale(1, RoundingMode.HALF_UP)));
 		}
@@ -244,7 +271,7 @@ public class Sensor {
 
 	}
 
-	private JsonObjectBuilder getMinMax(CriteriaQuery<SensorMeasurement> query, Order sort) {
+	private SensorMeasurement getMinMax(CriteriaQuery<SensorMeasurement> query, Order sort) {
 		query.orderBy(sort);
 		TypedQuery<SensorMeasurement> createQuery = em.createQuery(query);
 		createQuery.setMaxResults(1);
@@ -253,17 +280,11 @@ public class Sensor {
 		
 		if (!resultList.isEmpty()) {
 			SensorMeasurement sensorMeasurement = resultList.get(createQuery.getFirstResult());
-			return Json.createObjectBuilder().add("date", sensorMeasurement.getDate().getTime()).add("value", sensorMeasurement.getTemperatur());
+			return sensorMeasurement;
 		} else {
 			return null;
 		}
 
-	}
-
-	private void addIfNotNull(JsonObjectBuilder detailsTemp, String string, JsonObjectBuilder o) {
-		if (o != null) {
-			detailsTemp.add(string, o);
-		}
 	}
 	
 	private JsonObjectBuilder fromMeasureToJson(SensorMeasurement currentSensorData) {
