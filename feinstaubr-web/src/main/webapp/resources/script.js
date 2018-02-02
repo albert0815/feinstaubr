@@ -31,11 +31,13 @@
 	}
 
 	function drawCurrentMinMax() {
-		$("#current .val_date").html(convertDate(chartData.current.date));
-		$("#current .val_temperature").html(chartData.current.temperature.toLocaleString() + " °C");
-		$("#current .val_humidity").html(chartData.current.humidity.toLocaleString() + " %");
-		$("#current .val_p1").html(chartData.current.p1.toLocaleString() + " μg/m³");
-		$("#current .val_p2").html(chartData.current.p2.toLocaleString() + " μg/m³");
+		if (chartData.current) {
+			$("#current .val_date").html(convertDate(chartData.current.date));
+			$("#current .val_temperature").html(chartData.current.temperature.toLocaleString() + " °C");
+			$("#current .val_humidity").html(chartData.current.humidity.toLocaleString() + " %");
+			$("#current .val_p1").html(chartData.current.p1.toLocaleString() + " μg/m³");
+			$("#current .val_p2").html(chartData.current.p2.toLocaleString() + " μg/m³");
+		}
 		
 		$.each(chartData.details, function (detailType, values) {
 			var label;

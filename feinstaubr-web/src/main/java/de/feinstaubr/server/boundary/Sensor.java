@@ -213,11 +213,11 @@ public class Sensor {
 
 		//temperature
 		JsonObjectBuilder detailsTemp = Json.createObjectBuilder();
-		SensorMeasurement tempMin = getMinMax(query, criteriaBuilder.asc(root.get(SensorMeasurement_.temperatur)));
+		SensorMeasurement tempMin = getMinMax(query, criteriaBuilder.asc(criteriaBuilder.coalesce(root.get(SensorMeasurement_.temperatur), 9999)));
 		if (tempMin != null) {
 			detailsTemp.add("min", Json.createObjectBuilder().add("date", tempMin.getDate().getTime()).add("value", tempMin.getTemperatur()));
 		}
-		SensorMeasurement tempMax = getMinMax(query, criteriaBuilder.desc(root.get(SensorMeasurement_.temperatur)));
+		SensorMeasurement tempMax = getMinMax(query, criteriaBuilder.desc(criteriaBuilder.coalesce(root.get(SensorMeasurement_.temperatur), -9999)));
 		if (tempMax != null) {
 			detailsTemp.add("max", Json.createObjectBuilder().add("date", tempMax.getDate().getTime()).add("value", tempMax.getTemperatur()));
 		}
@@ -228,11 +228,11 @@ public class Sensor {
 
 		//humidity
 		JsonObjectBuilder detailsHum = Json.createObjectBuilder();
-		SensorMeasurement humMin = getMinMax(query, criteriaBuilder.asc(root.get(SensorMeasurement_.humidity)));
+		SensorMeasurement humMin = getMinMax(query, criteriaBuilder.asc(criteriaBuilder.coalesce(root.get(SensorMeasurement_.humidity), 9999)));
 		if (humMin != null) {
 			detailsHum.add("min", Json.createObjectBuilder().add("date", humMin.getDate().getTime()).add("value", humMin.getHumidity()));
 		}
-		SensorMeasurement humMax = getMinMax(query, criteriaBuilder.desc(root.get(SensorMeasurement_.humidity)));
+		SensorMeasurement humMax = getMinMax(query, criteriaBuilder.desc(criteriaBuilder.coalesce(root.get(SensorMeasurement_.humidity), -9999)));
 		if (humMax != null) {
 			detailsHum.add("max", Json.createObjectBuilder().add("date", humMax.getDate().getTime()).add("value", humMax.getHumidity()));
 		}
@@ -242,11 +242,11 @@ public class Sensor {
 		detailJson.add("humidity", detailsHum);
 
 		JsonObjectBuilder detailsP1 = Json.createObjectBuilder();
-		SensorMeasurement p1Min = getMinMax(query, criteriaBuilder.asc(root.get(SensorMeasurement_.p1)));
+		SensorMeasurement p1Min = getMinMax(query, criteriaBuilder.asc(criteriaBuilder.coalesce(root.get(SensorMeasurement_.p1), 9999)));
 		if (p1Min != null) {
 			detailsP1.add("min", Json.createObjectBuilder().add("date", p1Min.getDate().getTime()).add("value", p1Min.getP1()));
 		}
-		SensorMeasurement p1Max = getMinMax(query, criteriaBuilder.desc(root.get(SensorMeasurement_.p1)));
+		SensorMeasurement p1Max = getMinMax(query, criteriaBuilder.desc(criteriaBuilder.coalesce(root.get(SensorMeasurement_.p1), -9999)));
 		if (p1Max != null) {
 			detailsP1.add("max", Json.createObjectBuilder().add("date", p1Max.getDate().getTime()).add("value", p1Max.getP1()));
 		}
@@ -256,11 +256,11 @@ public class Sensor {
 		detailJson.add("p1", detailsP1);
 
 		JsonObjectBuilder detailsP2 = Json.createObjectBuilder();
-		SensorMeasurement p2Min = getMinMax(query, criteriaBuilder.asc(root.get(SensorMeasurement_.p2)));
+		SensorMeasurement p2Min = getMinMax(query, criteriaBuilder.asc(criteriaBuilder.coalesce(root.get(SensorMeasurement_.p2), 9999)));
 		if (p2Min != null) {
 			detailsP2.add("min", Json.createObjectBuilder().add("date", p2Min.getDate().getTime()).add("value", p2Min.getP2()));
 		}
-		SensorMeasurement p2Max = getMinMax(query, criteriaBuilder.desc(root.get(SensorMeasurement_.p2)));
+		SensorMeasurement p2Max = getMinMax(query, criteriaBuilder.desc(criteriaBuilder.coalesce(root.get(SensorMeasurement_.p2), -9999)));
 		if (p1Max != null) {
 			detailsP2.add("max", Json.createObjectBuilder().add("date", p2Max.getDate().getTime()).add("value", p2Max.getP2()));
 		}
