@@ -68,7 +68,7 @@
 						</span>
 						<span class="mdc-list-item__text val_date">
 							<h:outputText value="#{indexViewController.currentSensorData.date}">
-								<f:convertDateTime type="both" dateStyle="default" timeStyle="default" timeZone="Europe/Berlin" />
+								<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="Europe/Berlin" />
 							</h:outputText>
 						</span>
 					</li>
@@ -78,7 +78,7 @@
 						</span>
 						<span class="mdc-list-item__text val_temperature">
 							<h:outputText value="#{indexViewController.currentSensorData.temperatur}">
-								<f:convertNumber />
+								<f:convertNumber locale="de_DE"  />
 							</h:outputText> °C
 						</span>
 					</li>
@@ -88,7 +88,7 @@
 						</span>
 						<span class="mdc-list-item__text val_humidity">
 							<h:outputText value="#{indexViewController.currentSensorData.humidity}">
-								<f:convertNumber />
+								<f:convertNumber locale="de_DE" />
 							</h:outputText> %
 						</span>
 					</li>
@@ -98,7 +98,7 @@
 						</span>
 						<span class="mdc-list-item__text val_p2">
 							<h:outputText value="#{indexViewController.currentSensorData.p2}">
-								<f:convertNumber />
+								<f:convertNumber locale="de_DE" />
 							</h:outputText> μg/m³
 						</span>
 					</li>
@@ -108,7 +108,7 @@
 						</span>
 						<span class="mdc-list-item__text val_p1">
 							<h:outputText value="#{indexViewController.currentSensorData.p1}">
-								<f:convertNumber />
+								<f:convertNumber locale="de_DE" />
 							</h:outputText> μg/m³
 						</span>
 					</li>
