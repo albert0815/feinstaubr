@@ -114,7 +114,7 @@
 			minDate.setMilliseconds(0);
 			
 			switch (getPeriod()) {
-				case "week": minDate.setDate(minDate.getDate() - 7); break;
+				case "week": minDate.setDate(minDate.getDate() - 6); break;
 				case "month": minDate.setDate(minDate.getDate() - 28); break;
 				case "year": minDate.setDate(minDate.getDate() - 365); break;
 			}
