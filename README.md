@@ -16,6 +16,8 @@
 - fehler wenn sensor nicht da ist
 - anzeige der diagramme/current nur wenn daten da sind (material motion slide in)
 - return all in one json
+- include above the fold in jsf
+- switch to google build https://cloud.google.com/container-builder/docs/how-to/build-triggers
 
 # create google cluster
 https://cloud.google.com/kubernetes-engine/docs/tutorials/persistent-disk?hl=de
