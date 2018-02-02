@@ -14,16 +14,16 @@ script:
 - mvn install
 after_success:
 - export CLOUDSDK_CORE_DISABLE_PROMPTS=1
-- rm -rf ${HOME}/google-cloud-sdk
-- curl https://sdk.cloud.google.com | bash
+#- rm -rf ${HOME}/google-cloud-sdk
+- if [ -d "${HOME}/google-cloud-sdk" ]; then curl https://sdk.cloud.google.com | bash fi
+- ${HOME}/google-cloud-sdk/bin/gcloud components install kubectl
 - ${HOME}/google-cloud-sdk/bin/gcloud version
 - ${HOME}/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file ../gce.json
 - ${HOME}/google-cloud-sdk/bin/gcloud config set project feinstaubr
 - docker build . -t gcr.io/feinstaubr/feinstaubr-web:latest
 - ${HOME}/google-cloud-sdk/bin/gcloud docker -- push gcr.io/feinstaubr/feinstaubr-web:latest
-- ${HOME}/google-cloud-sdk/bin/gcloud components install kubectl
 - ${HOME}/google-cloud-sdk/bin/gcloud container clusters get-credentials feinstaubr-cluster --zone europe-west3-a
-- kubectl apply -f kubernetes kubernetes-feinstaubr-deployment.yaml
+- ${HOME}/google-cloud-sdk/bin/kubectl apply -f kubernetes kubernetes-feinstaubr-deployment.yaml
 
 
 before_install:
