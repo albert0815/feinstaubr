@@ -55,3 +55,7 @@ kubectl create secret generic cloudsql-db-credentials --from-literal=username=pr
 
 
 https://cloud.google.com/solutions/continuous-delivery-with-travis-ci
+
+
+# change commiter
+git filter-branch --commit-filter 'export GIT_COMMITTER_NAME="albert0815";export GIT_AUTHOR_NAME="albert0815"; export GIT_AUTHOR_EMAIL=mail@example.com;export GIT_COMMITTER_EMAIL=mail@example.com; git commit-tree "$@"'
