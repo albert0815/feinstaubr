@@ -3,6 +3,7 @@ package de.feinstaubr.server.view;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
@@ -17,7 +18,7 @@ import de.feinstaubr.server.entity.SensorMeasurement;
 public class IndexViewController {
 	@Inject
 	private Sensor sensor;
-	private SensorMeasurement currentSensorData;
+	private List<SensorMeasurement> currentSensorData;
 	private String version;
 	
 	@PostConstruct
@@ -32,7 +33,7 @@ public class IndexViewController {
 
 	}
 	
-	public SensorMeasurement getCurrentSensorData() {
+	public List<SensorMeasurement> getCurrentSensorData() {
 		return currentSensorData;
 	}
 	

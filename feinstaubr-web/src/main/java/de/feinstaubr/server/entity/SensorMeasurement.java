@@ -7,8 +7,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
+@Table(name="sensormeasurementvalues")
 public class SensorMeasurement {
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -16,13 +18,8 @@ public class SensorMeasurement {
 	
 	private Date date;
 	private String sensorId;
-	private String softwareVersion;
-	private BigDecimal temperatur;
-	private BigDecimal humidity;
-	private BigDecimal p1;
-	private BigDecimal p2;
-
-	
+	private String type;
+	private BigDecimal value;
 	public Date getDate() {
 		return date;
 	}
@@ -35,44 +32,16 @@ public class SensorMeasurement {
 	public void setSensorId(String sensorId) {
 		this.sensorId = sensorId;
 	}
-	public String getSoftwareVersion() {
-		return softwareVersion;
+	public String getType() {
+		return type;
 	}
-	public void setSoftwareVersion(String softwareVersion) {
-		this.softwareVersion = softwareVersion;
+	public void setType(String type) {
+		this.type = type;
 	}
-	public BigDecimal getTemperatur() {
-		return temperatur;
+	public BigDecimal getValue() {
+		return value;
 	}
-	public void setTemperatur(BigDecimal temperatur) {
-		this.temperatur = temperatur;
+	public void setValue(BigDecimal value) {
+		this.value = value;
 	}
-	public BigDecimal getHumidity() {
-		return humidity;
-	}
-	public void setHumidity(BigDecimal humidity) {
-		this.humidity = humidity;
-	}
-	public BigDecimal getP1() {
-		return p1;
-	}
-	public void setP1(BigDecimal p1) {
-		this.p1 = p1;
-	}
-	public BigDecimal getP2() {
-		return p2;
-	}
-	public void setP2(BigDecimal p2) {
-		this.p2 = p2;
-	}
-	@Override
-	public String toString() {
-		return "SensorMeasurement [id=" + id + ", date=" + date + ", sensorId=" + sensorId + ", softwareVersion="
-				+ softwareVersion + ", temperatur=" + temperatur + ", humidity=" + humidity + ", p1=" + p1 + ", p2="
-				+ p2 + "]";
-	}
-	
-	
-	
-	
 }

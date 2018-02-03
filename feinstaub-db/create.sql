@@ -5,15 +5,12 @@ CREATE SEQUENCE hibernate_sequence
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE sensormeasurement (
+CREATE TABLE sensormeasurementvalues (
     id bigint NOT NULL,
     date timestamp without time zone,
-    humidity numeric(19,2),
-    p1 numeric(19,2),
-    p2 numeric(19,2),
     sensorid character varying(255),
-    softwareversion character varying(255),
-    temperatur numeric(19,2)
+    type character varying(255) not null,
+    value numeric(19,2) not null
 );
 
 ALTER TABLE ONLY sensormeasurement
@@ -21,3 +18,5 @@ ALTER TABLE ONLY sensormeasurement
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON sensormeasurement TO proxyuser;    
 GRANT USAGE, SELECT ON SEQUENCE hibernate_sequence TO proxyuser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON sensormeasurementvalues TO feinstaub;    
+GRANT USAGE, SELECT ON SEQUENCE hibernate_sequence TO feinstaub;

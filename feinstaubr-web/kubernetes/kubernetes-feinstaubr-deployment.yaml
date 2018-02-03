@@ -21,8 +21,8 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 10
           livenessProbe:
-            tcpSocket:
-              port: 8080
+            httpGet:
+              path: /ping.html
             initialDelaySeconds: 15
             periodSeconds: 20
           # The following environment variables will contain the database host,
