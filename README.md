@@ -20,6 +20,7 @@
 - switch to google build https://cloud.google.com/container-builder/docs/how-to/build-triggers
 - maybe change data model (introduce type / value column, remove current temperature, etc. colums) as programming might be easier (but might decrease performance) - also it would be
 - compare values stored in luftdaten.info with mine
+- adjust build for branch different than master
 
 
 # create google cluster

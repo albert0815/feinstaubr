@@ -91,6 +91,9 @@
 
 	function drawCharts() {
 		$.each(chartData.charts, function (sensorType, data) {
+			if (!labels.get(sensorType)) {
+				return;
+			}
 			var dataTable = new google.visualization.DataTable();
 			dataTable.addColumn('datetime', 'Time');
 			dataTable.addColumn('number', labels.get(sensorType));
