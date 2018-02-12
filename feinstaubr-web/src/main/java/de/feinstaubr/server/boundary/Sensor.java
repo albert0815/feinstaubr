@@ -38,9 +38,6 @@ import javax.ws.rs.core.Response;
 
 import com.goebl.simplify.PointExtractor;
 import com.goebl.simplify.Simplify;
-import com.google.cloud.trace.Trace;
-import com.google.cloud.trace.Tracer;
-import com.google.cloud.trace.core.TraceContext;
 
 import de.feinstaubr.server.entity.SensorMeasurement;
 import de.feinstaubr.server.entity.SensorMeasurementType;
@@ -67,8 +64,8 @@ public class Sensor {
 	@Path("/save")
 	@POST
 	public void save(JsonObject o) {
-	    Tracer tracer = Trace.getTracer();
-		TraceContext traceContext = tracer.startSpan("save");
+//	    Tracer tracer = Trace.getTracer();
+//		TraceContext traceContext = tracer.startSpan("save");
 		Date now = new Date();
 		JsonArray sensorDataValues = o.getJsonArray("sensordatavalues");
 		for (int i = 0; i < sensorDataValues.size(); i++) {
@@ -96,7 +93,7 @@ public class Sensor {
 			LOGGER.fine("saving new measurement " + measurement);
 			em.persist(measurement);
 		}
-		tracer.endSpan(traceContext);
+//		tracer.endSpan(traceContext);
 	}
 	
 	public List<SensorMeasurement> getCurrentSensorData(String sensorId) {
@@ -145,13 +142,13 @@ public class Sensor {
 		Predicate predicatePeriod = criteriaBuilder.greaterThan(measurementValuesJoin.get(SensorMeasurement_.date), getPeriodStartDate(period).getTime());
 		query.where(criteriaBuilder.and(predicateId, predicatePeriod));
 		
-	    Tracer tracer = Trace.getTracer();
-		TraceContext traceContext = tracer.startSpan("db-get-chart-entries");
+//	    Tracer tracer = Trace.getTracer();
+//		TraceContext traceContext = tracer.startSpan("db-get-chart-entries");
 		long start;
 		start = System.currentTimeMillis();
 		List<SensorMeasurementType> resultList = em.createQuery(query).setHint("javax.persistence.fetchgraph", graph).getResultList();
 		LOGGER.info("duration for db: " + (System.currentTimeMillis() - start));
-		tracer.endSpan(traceContext);
+//		tracer.endSpan(traceContext);
 		if (resultList.isEmpty()) {
 			return Response.ok().build();
 		}
