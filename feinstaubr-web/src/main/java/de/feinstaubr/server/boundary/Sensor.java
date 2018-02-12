@@ -2,10 +2,8 @@ package de.feinstaubr.server.boundary;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,13 +17,14 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
@@ -39,8 +38,13 @@ import javax.ws.rs.core.Response;
 
 import com.goebl.simplify.PointExtractor;
 import com.goebl.simplify.Simplify;
+import com.google.cloud.trace.Trace;
+import com.google.cloud.trace.Tracer;
+import com.google.cloud.trace.core.TraceContext;
 
 import de.feinstaubr.server.entity.SensorMeasurement;
+import de.feinstaubr.server.entity.SensorMeasurementType;
+import de.feinstaubr.server.entity.SensorMeasurementType_;
 import de.feinstaubr.server.entity.SensorMeasurement_;
 
 @Stateless
@@ -59,12 +63,20 @@ public class Sensor {
 	@PersistenceContext
 	private EntityManager em;
 	
+	
 	@Path("/save")
 	@POST
 	public void save(JsonObject o) {
+	    Tracer tracer = Trace.getTracer();
+		TraceContext traceContext = tracer.startSpan("save");
 		Date now = new Date();
 		JsonArray sensorDataValues = o.getJsonArray("sensordatavalues");
 		for (int i = 0; i < sensorDataValues.size(); i++) {
+			JsonObject sensorData = sensorDataValues.getJsonObject(i);
+			SensorMeasurementType measurementType = em.find(SensorMeasurementType.class, sensorData.getString("value_type"));
+			if (measurementType == null) {
+				continue;
+			}
 			SensorMeasurement measurement = new SensorMeasurement();
 			if (o.containsKey("date")) {
 				// for testing purposes, this is not provided by the sensor
@@ -78,12 +90,13 @@ public class Sensor {
 				measurement.setDate(now);
 			}
 			measurement.setSensorId(o.getString("esp8266id"));
-			JsonObject sensorData = sensorDataValues.getJsonObject(i);
-			measurement.setType(sensorData.getString("value_type"));
+			
+			measurement.setType(measurementType);
 			measurement.setValue(new BigDecimal(sensorData.getString("value")));
 			LOGGER.fine("saving new measurement " + measurement);
 			em.persist(measurement);
 		}
+		tracer.endSpan(traceContext);
 	}
 	
 	public List<SensorMeasurement> getCurrentSensorData(String sensorId) {
@@ -118,99 +131,94 @@ public class Sensor {
 			throw new RuntimeException("unknown period");
 		}
 
+		EntityGraph<SensorMeasurementType> graph = em.createEntityGraph(SensorMeasurementType.class);
+		graph.addSubgraph(SensorMeasurementType_.measurements);
+		  
 		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
-		CriteriaQuery<SensorMeasurement> query = criteriaBuilder.createQuery(SensorMeasurement.class);
-		Root<SensorMeasurement> root = query.from(SensorMeasurement.class);
-		query.select(root);
+		CriteriaQuery<SensorMeasurementType> query = criteriaBuilder.createQuery(SensorMeasurementType.class);
+		Root<SensorMeasurementType> root = query.from(SensorMeasurementType.class);
+		query.select(root).orderBy(criteriaBuilder.asc(root.get(SensorMeasurementType_.sortOrder))).distinct(true);
 		
-		Predicate predicateId = criteriaBuilder.equal(root.get(SensorMeasurement_.sensorId), sensorId);
-		Predicate predicatePeriod = criteriaBuilder.greaterThan(root.get(SensorMeasurement_.date), getPeriodStartDate(period).getTime());
+		Join<SensorMeasurementType, SensorMeasurement> measurementValuesJoin = root.join(SensorMeasurementType_.measurements, JoinType.LEFT);
+
+		Predicate predicateId = criteriaBuilder.equal(measurementValuesJoin.get(SensorMeasurement_.sensorId), sensorId);
+		Predicate predicatePeriod = criteriaBuilder.greaterThan(measurementValuesJoin.get(SensorMeasurement_.date), getPeriodStartDate(period).getTime());
 		query.where(criteriaBuilder.and(predicateId, predicatePeriod));
-		query.orderBy(criteriaBuilder.asc(root.get(SensorMeasurement_.date)));
 		
-		List<SensorMeasurement> resultList = em.createQuery(query).getResultList();
+	    Tracer tracer = Trace.getTracer();
+		TraceContext traceContext = tracer.startSpan("db-get-chart-entries");
+		long start;
+		start = System.currentTimeMillis();
+		List<SensorMeasurementType> resultList = em.createQuery(query).setHint("javax.persistence.fetchgraph", graph).getResultList();
+		LOGGER.info("duration for db: " + (System.currentTimeMillis() - start));
+		tracer.endSpan(traceContext);
 		if (resultList.isEmpty()) {
 			return Response.ok().build();
 		}
-		Map<String, SensorMeasurement> mins = new HashMap<>();
-		Map<String, SensorMeasurement> maxs = new HashMap<>();
-		Map<String, BigDecimal> sums = new HashMap<>();
-		Map<String, BigDecimal> counts = new HashMap<>();
-		Map<String, List<SensorMeasurement>> measuresPerType = new HashMap<>();
-		
-		for (SensorMeasurement m : resultList) {
-			List<SensorMeasurement> measuresList = measuresPerType.get(m.getType());
-			if (measuresList == null) {
-				measuresList = new ArrayList<>();
-				measuresPerType.put(m.getType(), measuresList);
-			}
-			measuresList.add(m);
-			
-			SensorMeasurement currentMin = mins.get(m.getType());
-			if (currentMin == null || currentMin.getValue().compareTo(m.getValue()) > 0) {
-				mins.put(m.getType(), m);
-			}
-			SensorMeasurement currentMax = maxs.get(m.getType());
-			if (currentMax == null || currentMax.getValue().compareTo(m.getValue()) < 0) {
-				maxs.put(m.getType(), m);
-			}
-			BigDecimal currentSum = sums.get(m.getType());
-			if (currentSum == null) {
-				sums.put(m.getType(), m.getValue());
-			} else {
-				sums.put(m.getType(), m.getValue().add(currentSum));
-			}
-			BigDecimal currentCount = counts.get(m.getType());
-			if (currentCount == null) {
-				currentCount = BigDecimal.ONE;
-				counts.put(m.getType(), currentCount);
-			} else {
-				counts.put(m.getType(), currentCount.add(BigDecimal.ONE));
-			}
-		}
-		
-		JsonObjectBuilder detailsJson = Json.createObjectBuilder();
-		
-		JsonObjectBuilder minsJson = Json.createObjectBuilder();
-		for (String type : mins.keySet()) {
-			minsJson.add(type, Json.createObjectBuilder()
-						.add("date", mins.get(type).getDate().getTime())
-						.add("value", mins.get(type).getValue())
-				);
-		}
-		detailsJson.add("mins", minsJson);
 
-		JsonObjectBuilder maxsJson = Json.createObjectBuilder();
-		for (String type : maxs.keySet()) {
-			maxsJson.add(type, Json.createObjectBuilder()
-						.add("date", maxs.get(type).getDate().getTime())
-						.add("value", maxs.get(type).getValue())
-				);
+		JsonObjectBuilder chartsJson = Json.createObjectBuilder();
+		JsonObjectBuilder detailsJson = Json.createObjectBuilder();
+
+		start = System.currentTimeMillis();
+		for (SensorMeasurementType measurementType : resultList) {
+			List<SensorMeasurement> measurements = measurementType.getMeasurements();
+			int measurementsSize = measurements.size();
+			SensorMeasurement last = measurements.get(measurementsSize - 1);
+			SensorMeasurement min = last;
+			SensorMeasurement max = last;
+			BigDecimal sum = last.getValue();
+			BigDecimal lastValue = last.getValue();
+//			JsonArrayBuilder chartEntries = Json.createArrayBuilder();
+//			chartEntries.add(Json.createArrayBuilder().add(last.getDate().getTime()).add(last.getValue()));
+			for (int i = measurementsSize - 2; i >= 0; i--) {
+				SensorMeasurement sensorMeasurement = measurements.get(i);
+				if (min.getValue().compareTo(sensorMeasurement.getValue()) > 0) {
+					min = sensorMeasurement;
+				}
+				if (max.getValue().compareTo(sensorMeasurement.getValue()) < 0) {
+					max = sensorMeasurement;
+				}
+				sum = sum.add(sensorMeasurement.getValue());
+				
+				//maybe we can do simplify on the fly (always get distance from the line between the last two points)
+				if (lastValue.subtract(sensorMeasurement.getValue()).abs().compareTo(measurementType.getMinDiffBetweenTwoValues()) > 0 || i == 0) {
+//					chartEntries.add(Json.createArrayBuilder().add(sensorMeasurement.getDate().getTime()).add(sensorMeasurement.getValue()));
+					measurements.remove(i);
+					lastValue = sensorMeasurement.getValue();
+				}
+			}
+//			chartsJson.add(measurementType.getType(), chartEntries);
+			
+			detailsJson.add(measurementType.getType(), Json.createObjectBuilder()
+					.add("min", Json.createObjectBuilder()
+							.add("value", min.getValue())
+							.add("date", min.getDate().getTime())
+						)
+					.add("max", Json.createObjectBuilder()
+							.add("value", max.getValue())
+							.add("date", max.getDate().getTime())
+						)
+					.add("avg", Json.createObjectBuilder()
+							.add("value", sum.divide(new BigDecimal(measurementsSize), RoundingMode.HALF_UP))
+						)
+					);
 		}
-		detailsJson.add("maxs", maxsJson);
-		
-		JsonObjectBuilder avgJson = Json.createObjectBuilder();
-		for (String type : sums.keySet()) {
-			avgJson.add(type, Json.createObjectBuilder()
-						.add("value", sums.get(type).divide(counts.get(type), 1, RoundingMode.HALF_UP))
-				);
-		}
-		detailsJson.add("avg", avgJson);
-		
+		LOGGER.info("duration for min/max/delete: " + (System.currentTimeMillis() - start));
+
 		Simplify<SensorMeasurement> simplify = new Simplify<>(new SensorMeasurement[0], new PointExtractor<SensorMeasurement>() {
 			@Override
 			public double getX(SensorMeasurement arg0) {
-				return arg0.getDate().getTime() * 10000;
+				return arg0.getDate().getTime() * 10000;//interval between two measures
 			}
 			@Override
 			public double getY(SensorMeasurement arg0) {
-				return arg0.getValue().doubleValue() * 10000;
+				return arg0.getValue().doubleValue() * 10000;//so the square diff between two measures is better
 			}
 		});
-		
-		JsonObjectBuilder chartsJson = Json.createObjectBuilder();
-		for (String type : measuresPerType.keySet()) {
-			SensorMeasurement[] simplified = simplify.simplify(measuresPerType.get(type).toArray(new SensorMeasurement[0]), INTERVAL_MAP.get(period)[2], false);
+			
+		for (SensorMeasurementType type : resultList) {
+			start = System.currentTimeMillis();
+			SensorMeasurement[] simplified = simplify.simplify(type.getMeasurements().toArray(new SensorMeasurement[0]), type.getEpsilonForSimplify(), false);
 
 			JsonArrayBuilder chartEntries = Json.createArrayBuilder();
 			for (SensorMeasurement m : simplified) {
@@ -219,14 +227,15 @@ public class Sensor {
 				}
 				chartEntries.add(Json.createArrayBuilder().add(m.getDate().getTime()).add(m.getValue()));
 			}
-			chartsJson.add(type, chartEntries);
+			chartsJson.add(type.getType(), chartEntries);
+			LOGGER.info("duration for simplify for " + type.getType() + ": " + (System.currentTimeMillis() - start));
 		}
-		
+
 		List<SensorMeasurement> currentSensorData = getCurrentSensorData(sensorId);
 		JsonObjectBuilder currentJson = Json.createObjectBuilder();
 		for (SensorMeasurement m : currentSensorData) {
 			currentJson.add("date", m.getDate().getTime());
-			currentJson.add(m.getType(), m.getValue());
+			currentJson.add(m.getType().getType(), m.getValue());
 		}
 
 		JsonObjectBuilder resultJson = Json.createObjectBuilder()
@@ -235,7 +244,6 @@ public class Sensor {
 				.add("details", detailsJson);
 		
 		return Response.ok(resultJson.build()).build();
-
 	
 	}
 
@@ -248,6 +256,15 @@ public class Sensor {
 		c.set(Calendar.SECOND, 0);
 		c.set(Calendar.MILLISECOND, 0);
 		return c;
+	}
+
+	public List<SensorMeasurementType> getTypes() {
+		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+		CriteriaQuery<SensorMeasurementType> query = criteriaBuilder.createQuery(SensorMeasurementType.class);
+		Root<SensorMeasurementType> root = query.from(SensorMeasurementType.class);
+		query.select(root);
+		query.orderBy(criteriaBuilder.asc(root.get(SensorMeasurementType_.sortOrder)));
+		return em.createQuery(query).getResultList();
 	}
 	
 }

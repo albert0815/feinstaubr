@@ -77,21 +77,12 @@
 					<ui:repeat value="#{indexViewController.currentSensorData}" var="data">
 						<li class="mdc-list-item">
 							<span class="mdc-list-item__graphic">
-								<i class="material-icons" aria-hidden="true">
-									<h:outputText value="wb_sunny" rendered="#{data.type == 'temperature'}"/>
-									<h:outputText value="grain" rendered="#{data.type == 'humidity'}"/>
-									<h:outputText value="location_city" rendered="#{data.type == 'SDS_P1'}"/>
-									<h:outputText value="location_city" rendered="#{data.type == 'SDS_P2'}"/>
-								</i>
+								<i class="material-icons" aria-hidden="true"><h:outputText value="#{data.type.logo}" /></i>
 							</span>
-							<span class="mdc-list-item__text val_#{data.type}">
+							<span class="mdc-list-item__text val_#{data.type.type}">
 								<h:outputText value="#{data.value}">
 									<f:convertNumber locale="de_DE" />
-								</h:outputText>
-								<h:outputText value=" °C" rendered="#{data.type == 'temperature'}"/>
-								<h:outputText value=" %" rendered="#{data.type == 'humidity'}"/>
-								<h:outputText value=" PM10 in μg/m³" rendered="#{data.type == 'SDS_P1'}"/>
-								<h:outputText value=" PM2.5 in μg/m³" rendered="#{data.type == 'SDS_P2'}"/>
+								</h:outputText> <h:outputText value="#{data.type.label}" />
 							</span>
 						</li>
 					</ui:repeat>
@@ -109,131 +100,42 @@
 		</nav>
 	<div class="mdc-layout-grid">
 		<div class="mdc-layout-grid__inner">
-			<div class="mdc-layout-grid__cell  mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
-				<div class="mdc-card">
-					<section class="mdc-card__primary">
-						<h1 class="mdc-card__title mdc-card__title--large">Temperatur</h1>
-					</section>
-					<div id="chart_temperature" class="chart"></div>
-					<section class="mdc-card__supporting-text">
-					<ul class="mdc-list mdc-list--dense" id="temperature">
-						<li class="mdc-list-item">
-							<span class="mdc-list-item__graphic">
-								<i class="material-icons" aria-hidden="true">arrow_upward</i>
-							</span>
-							<span class="mdc-list-item__text val_maxs">
-							</span>
-						</li>
-						<li class="mdc-list-item">
-							<span class="mdc-list-item__graphic">
-								<i class="material-icons" aria-hidden="true">arrow_forward</i>
-							</span>
-							<span class="mdc-list-item__text val_avg"></span>
-						</li>
-						<li class="mdc-list-item">
-							<span class="mdc-list-item__graphic">
-								<i class="material-icons" aria-hidden="true">arrow_downward</i>
-							</span>
-							<span class="mdc-list-item__text val_mins"></span>
-						</li>
-					</ul>
-					</section>
-				</div>
-			</div>
-			<div class="mdc-layout-grid__cell   mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
-				<div class="mdc-card">
-					<section class="mdc-card__primary">
-						<h1 class="mdc-card__title mdc-card__title--large">Luftfeuchtigkeit</h1>
-					</section>
-					<div id="chart_humidity" class="chart"></div>
-					<section class="mdc-card__supporting-text">
-					<ul class="mdc-list mdc-list--dense" id="humidity">
-						<li class="mdc-list-item">
-							<span class="mdc-list-item__graphic">
-								<i class="material-icons" aria-hidden="true">arrow_upward</i>
-							</span>
-							<span class="mdc-list-item__text val_maxs">
-							</span>
-						</li>
-						<li class="mdc-list-item">
-							<span class="mdc-list-item__graphic">
-								<i class="material-icons" aria-hidden="true">arrow_forward</i>
-							</span>
-							<span class="mdc-list-item__text val_avg"></span>
-						</li>
-						<li class="mdc-list-item">
-							<span class="mdc-list-item__graphic">
-								<i class="material-icons" aria-hidden="true">arrow_downward</i>
-							</span>
-							<span class="mdc-list-item__text val_mins"></span>
-						</li>
-					</ul>
-					</section>
-				</div>
-			</div>
-			<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
-				<div class="mdc-card">
-					<section class="mdc-card__primary">
-						<h1 class="mdc-card__title mdc-card__title--large">PM10</h1>
-					</section>
-					<div id="chart_SDS_P1" class="chart"></div>
-					<section class="mdc-card__supporting-text">
-					<ul class="mdc-list mdc-list--dense" id="SDS_P1">
-						<li class="mdc-list-item">
-							<span class="mdc-list-item__graphic">
-								<i class="material-icons" aria-hidden="true">arrow_upward</i>
-							</span>
-							<span class="mdc-list-item__text val_maxs">
-							</span>
-						</li>
-						<li class="mdc-list-item">
-							<span class="mdc-list-item__graphic">
-								<i class="material-icons" aria-hidden="true">arrow_forward</i>
-							</span>
-							<span class="mdc-list-item__text val_avg"></span>
-						</li>
-						<li class="mdc-list-item" title="Minimum">
-							<span class="mdc-list-item__graphic">
-								<i class="material-icons" aria-hidden="true">arrow_downward</i>
-							</span>
-							<span class="mdc-list-item__text val_mins"></span>
-						</li>
-					</ul>
-					</section>
-				</div>
-			</div>
-			<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
-				<div class="mdc-card">
-					<section class="mdc-card__primary">
-						<h1 class="mdc-card__title mdc-card__title--large">PM2.5</h1>
-					</section>
-					<div id="chart_SDS_P2" class="chart"></div>
-					<section class="mdc-card__supporting-text">
-					<ul class="mdc-list mdc-list--dense" id="SDS_P2">
-						<li class="mdc-list-item">
-							<span class="mdc-list-item__graphic">
-								<i class="material-icons" aria-hidden="true">arrow_upward</i>
-							</span>
-							<span class="mdc-list-item__text val_maxs">
-							</span>
-						</li>
-						<li class="mdc-list-item">
-							<span class="mdc-list-item__graphic">
-								<i class="material-icons" aria-hidden="true">arrow_forward</i>
-							</span>
-							<span class="mdc-list-item__text val_avg"></span>
-						</li>
-						<li class="mdc-list-item">
-							<span class="mdc-list-item__graphic">
-								<i class="material-icons" aria-hidden="true">arrow_downward</i>
-							</span>
-							<span class="mdc-list-item__text val_mins"></span>
-						</li>
-					</ul>
-					</section>
-				</div>
-			</div>
+			<ui:repeat value="#{indexViewController.sensorDataTypes}" var="data">
+				<div class="mdc-layout-grid__cell  mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
+					<div class="mdc-card demo-card" id="#{data.type}">
+			          <div class="demo-card__primary" style="padding-left:1rem">
+			            <h2 class="demo-card__title mdc-typography--title">#{data.type}</h2>
+			          </div>
+			          <div class="mdc-card__media mdc-card__media">
+			          	<div id="chart_#{data.type}" class="chart"></div>
+			          </div>
+			          <div class="demo-card__secondary mdc-typography--body1">
+						<ul class="mdc-list mdc-list--dense">
+							<li class="mdc-list-item">
+								<span class="mdc-list-item__graphic">
+									<i class="material-icons" aria-hidden="true">arrow_upward</i>
+								</span>
+								<span class="mdc-list-item__text val_max">
+								</span>
+							</li>
+							<li class="mdc-list-item">
+								<span class="mdc-list-item__graphic">
+									<i class="material-icons" aria-hidden="true">arrow_forward</i>
+								</span>
+								<span class="mdc-list-item__text val_avg"></span>
+							</li>
+							<li class="mdc-list-item">
+								<span class="mdc-list-item__graphic">
+									<i class="material-icons" aria-hidden="true">arrow_downward</i>
+								</span>
+								<span class="mdc-list-item__text val_min"></span>
+							</li>
+						</ul>
 
+			          </div>
+			        </div>
+			       </div>
+			</ui:repeat>
 		</div>
 	</div>
 	

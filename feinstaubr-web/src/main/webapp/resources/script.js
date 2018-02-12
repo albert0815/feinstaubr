@@ -41,17 +41,17 @@
 			if (chartData.current.humidity) {
 				$("#current .val_humidity").html(chartData.current.humidity.toLocaleString() + " %");
 			}
-			if (chartData.current.p1) {
-				$("#current .val_p1").html(chartData.current.p1.toLocaleString() + " μg/m³");
+			if (chartData.current.SDS_P1) {
+				$("#current .val_SDS_P1").html(chartData.current.SDS_P1.toLocaleString() + " μg/m³");
 			}
-			if (chartData.current.p2) {
-				$("#current .val_p2").html(chartData.current.p2.toLocaleString() + " μg/m³");
+			if (chartData.current.SDS_P2) {
+				$("#current .val_SDS_P2").html(chartData.current.SDS_P1.toLocaleString() + " μg/m³");
 			}
 		}
 		
 		$.each(chartData.details, function (typeOfMeasure, values) {
 			for (var key in values) {
-				var label = labels.get(key);
+				var label = labels.get(typeOfMeasure);
 				var value = values[key].value;
 				if (typeof value === 'number') {
 					value = value.toLocaleString();
@@ -66,7 +66,7 @@
 						value = value + " (" + convertDate(values[key].date) + ")";
 					}
 				}
-				$("#" + key + " .val_" + typeOfMeasure).html(value);
+				$("#" + typeOfMeasure + " .val_" + key).html(value);
 			}
 		});
 	}
