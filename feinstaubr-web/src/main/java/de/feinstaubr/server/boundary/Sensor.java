@@ -52,9 +52,9 @@ public class Sensor {
 	
 	static {
 		INTERVAL_MAP.put("day", new Integer[] {0, 15 * 60, 1000});//period to select: today, interval 15 minutes
-		INTERVAL_MAP.put("week", new Integer[] {6 * 24, 60 * 60, 10000});//period to select: 1 week, interval 60 minutes
-		INTERVAL_MAP.put("month", new Integer[] {28 * 24, 120 * 60, 100000});//period to select: 28 days, interval 2 hours
-		INTERVAL_MAP.put("year", new Integer[] {365 * 24, 1440 * 60, 100000});//period to select: 1 year, interval 24 hours
+		INTERVAL_MAP.put("week", new Integer[] {6, 60 * 60, 10000});//period to select: 1 week, interval 60 minutes
+		INTERVAL_MAP.put("month", new Integer[] {28, 120 * 60, 100000});//period to select: 28 days, interval 2 hours
+		INTERVAL_MAP.put("year", new Integer[] {365, 1440 * 60, 100000});//period to select: 1 year, interval 24 hours
 	}
 	
 	@PersistenceContext
@@ -111,7 +111,7 @@ public class Sensor {
 		Predicate predicateId = criteriaBuilder.equal(root.get(SensorMeasurement_.sensorId), sensorId);
 		Predicate predicateDate = criteriaBuilder.equal(root.get(SensorMeasurement_.date), sq);
 		
-		query.where(criteriaBuilder.and(predicateId, predicateDate));
+		query.where(criteriaBuilder.and(predicateId, predicateDate)).orderBy(criteriaBuilder.asc(root.get(SensorMeasurement_.type).get(SensorMeasurementType_.sortOrder)));
 
 		TypedQuery<SensorMeasurement> createQuery = em.createQuery(query);
 		List<SensorMeasurement> resultList = createQuery.getResultList();
@@ -156,8 +156,9 @@ public class Sensor {
 		JsonObjectBuilder chartsJson = Json.createObjectBuilder();
 		JsonObjectBuilder detailsJson = Json.createObjectBuilder();
 
-		start = System.currentTimeMillis();
 		for (SensorMeasurementType measurementType : resultList) {
+			start = System.currentTimeMillis();
+			int sizeBefore = measurementType.getMeasurements().size();
 			List<SensorMeasurement> measurements = measurementType.getMeasurements();
 			int measurementsSize = measurements.size();
 			SensorMeasurement last = measurements.get(measurementsSize - 1);
@@ -165,8 +166,6 @@ public class Sensor {
 			SensorMeasurement max = last;
 			BigDecimal sum = last.getValue();
 			BigDecimal lastValue = last.getValue();
-//			JsonArrayBuilder chartEntries = Json.createArrayBuilder();
-//			chartEntries.add(Json.createArrayBuilder().add(last.getDate().getTime()).add(last.getValue()));
 			for (int i = measurementsSize - 2; i >= 0; i--) {
 				SensorMeasurement sensorMeasurement = measurements.get(i);
 				if (min.getValue().compareTo(sensorMeasurement.getValue()) > 0) {
@@ -177,14 +176,13 @@ public class Sensor {
 				}
 				sum = sum.add(sensorMeasurement.getValue());
 				
-				//maybe we can do simplify on the fly (always get distance from the line between the last two points)
-				if (lastValue.subtract(sensorMeasurement.getValue()).abs().compareTo(measurementType.getMinDiffBetweenTwoValues()) > 0 || i == 0) {
-//					chartEntries.add(Json.createArrayBuilder().add(sensorMeasurement.getDate().getTime()).add(sensorMeasurement.getValue()));
+				//maybe this is not needed..
+				if (lastValue.subtract(sensorMeasurement.getValue()).abs().compareTo(measurementType.getMinDiffBetweenTwoValues()) <= 0 || i == 0) {
 					measurements.remove(i);
+				} else {
 					lastValue = sensorMeasurement.getValue();
 				}
 			}
-//			chartsJson.add(measurementType.getType(), chartEntries);
 			
 			detailsJson.add(measurementType.getType(), Json.createObjectBuilder()
 					.add("min", Json.createObjectBuilder()
@@ -199,8 +197,8 @@ public class Sensor {
 							.add("value", sum.divide(new BigDecimal(measurementsSize), RoundingMode.HALF_UP))
 						)
 					);
+			LOGGER.info("duration for min/max/delete for " + measurementType.getType() + " : " + (System.currentTimeMillis() - start) + " - reduced from " + sizeBefore + " -> " + measurementType.getMeasurements().size());
 		}
-		LOGGER.info("duration for min/max/delete: " + (System.currentTimeMillis() - start));
 
 		Simplify<SensorMeasurement> simplify = new Simplify<>(new SensorMeasurement[0], new PointExtractor<SensorMeasurement>() {
 			@Override
@@ -209,13 +207,13 @@ public class Sensor {
 			}
 			@Override
 			public double getY(SensorMeasurement arg0) {
-				return arg0.getValue().doubleValue() * 10000;//so the square diff between two measures is better
+				return arg0.getValue().doubleValue() * 100;//so the square diff between two measures is better
 			}
 		});
 			
 		for (SensorMeasurementType type : resultList) {
 			start = System.currentTimeMillis();
-			SensorMeasurement[] simplified = simplify.simplify(type.getMeasurements().toArray(new SensorMeasurement[0]), type.getEpsilonForSimplify(), false);
+			SensorMeasurement[] simplified = simplify.simplify(type.getMeasurements().toArray(new SensorMeasurement[0]), type.getEpsilonForSimplify() * INTERVAL_MAP.get(period)[0], false);
 
 			JsonArrayBuilder chartEntries = Json.createArrayBuilder();
 			for (SensorMeasurement m : simplified) {
@@ -225,14 +223,18 @@ public class Sensor {
 				chartEntries.add(Json.createArrayBuilder().add(m.getDate().getTime()).add(m.getValue()));
 			}
 			chartsJson.add(type.getType(), chartEntries);
-			LOGGER.info("duration for simplify for " + type.getType() + ": " + (System.currentTimeMillis() - start));
+			LOGGER.info("duration for simplify for " + type.getType() + ": " + (System.currentTimeMillis() - start) + " - reduced from " + type.getMeasurements().size() + " -> " + simplified.length);
 		}
 
 		List<SensorMeasurement> currentSensorData = getCurrentSensorData(sensorId);
 		JsonObjectBuilder currentJson = Json.createObjectBuilder();
-		for (SensorMeasurement m : currentSensorData) {
-			currentJson.add("date", m.getDate().getTime());
-			currentJson.add(m.getType().getType(), m.getValue());
+		if (currentSensorData.size() > 0) {
+			JsonObjectBuilder currentValuesJson = Json.createObjectBuilder();
+			for (SensorMeasurement m : currentSensorData) {
+				currentValuesJson.add(m.getType().getType(), m.getValue());
+			}
+			currentJson.add("date", currentSensorData.get(0).getDate().getTime());
+			currentJson.add("values", currentValuesJson);
 		}
 
 		JsonObjectBuilder resultJson = Json.createObjectBuilder()
@@ -247,7 +249,7 @@ public class Sensor {
 
 	private Calendar getPeriodStartDate(String period) {
 		Calendar c = Calendar.getInstance();
-		c.add(Calendar.HOUR_OF_DAY, -INTERVAL_MAP.get(period)[0]);
+		c.add(Calendar.DATE, -INTERVAL_MAP.get(period)[0]);
 		c.set(Calendar.HOUR_OF_DAY, 0);
 		c.set(Calendar.MINUTE, 0);
 		c.set(Calendar.SECOND, 0);

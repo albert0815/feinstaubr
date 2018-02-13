@@ -7,8 +7,8 @@
 	var labels = new Map();
 	labels.set("temperature", " °C");
 	labels.set("humidity", " %");
-	labels.set("SDS_P1", " PM2.5 in μg/m³");
-	labels.set("SDS_P2", " PM10 in μg/m³");
+	labels.set("SDS_P1", " PM10 in μg/m³");
+	labels.set("SDS_P2", " PM2.5 in μg/m³");
 
 	
 	function loadData() {
@@ -35,17 +35,8 @@
 			if (chartData.current.date) {
 				$("#current .val_date").html(convertDate(chartData.current.date));
 			}
-			if (chartData.current.temperature) {
-				$("#current .val_temperature").html(chartData.current.temperature.toLocaleString() + " °C");
-			}
-			if (chartData.current.humidity) {
-				$("#current .val_humidity").html(chartData.current.humidity.toLocaleString() + " %");
-			}
-			if (chartData.current.SDS_P1) {
-				$("#current .val_SDS_P1").html(chartData.current.SDS_P1.toLocaleString() + " μg/m³");
-			}
-			if (chartData.current.SDS_P2) {
-				$("#current .val_SDS_P2").html(chartData.current.SDS_P1.toLocaleString() + " μg/m³");
+			for (var key in chartData.current.values) {
+				$("#current .val_" + key).html(chartData.current.values[key].toLocaleString() + labels.get(key));
 			}
 		}
 		
