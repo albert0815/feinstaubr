@@ -5,10 +5,10 @@
 	var jqXHR;
 	
 	var labels = new Map();
-	labels.set("temperature", "Temperatur in °C");
-	labels.set("humidity", "Luftfeuchtigkeit in %");
-	labels.set("p2", "Feinstaub PM2.5 in μg/m³");
-	labels.set("p1", "Feinstaub PM10 in μg/m³");
+	labels.set("temperature", " °C");
+	labels.set("humidity", " %");
+	labels.set("SDS_P1", " PM2.5 in μg/m³");
+	labels.set("SDS_P2", " PM10 in μg/m³");
 
 	
 	function loadData() {
@@ -32,21 +32,26 @@
 
 	function drawCurrentMinMax() {
 		if (chartData.current) {
-			$("#current .val_date").html(convertDate(chartData.current.date));
-			$("#current .val_temperature").html(chartData.current.temperature.toLocaleString() + " °C");
-			$("#current .val_humidity").html(chartData.current.humidity.toLocaleString() + " %");
-			$("#current .val_p1").html(chartData.current.p1.toLocaleString() + " μg/m³");
-			$("#current .val_p2").html(chartData.current.p2.toLocaleString() + " μg/m³");
+			if (chartData.current.date) {
+				$("#current .val_date").html(convertDate(chartData.current.date));
+			}
+			if (chartData.current.temperature) {
+				$("#current .val_temperature").html(chartData.current.temperature.toLocaleString() + " °C");
+			}
+			if (chartData.current.humidity) {
+				$("#current .val_humidity").html(chartData.current.humidity.toLocaleString() + " %");
+			}
+			if (chartData.current.SDS_P1) {
+				$("#current .val_SDS_P1").html(chartData.current.SDS_P1.toLocaleString() + " μg/m³");
+			}
+			if (chartData.current.SDS_P2) {
+				$("#current .val_SDS_P2").html(chartData.current.SDS_P1.toLocaleString() + " μg/m³");
+			}
 		}
 		
-		$.each(chartData.details, function (detailType, values) {
-			var label;
-			switch (detailType) {
-			case "temperature":   label = " °C"; break;
-			case "humidity":      label = " %"; break;
-			case "p1": case "p2": label = " μg/m³"; break;
-			}
+		$.each(chartData.details, function (typeOfMeasure, values) {
 			for (var key in values) {
+				var label = labels.get(typeOfMeasure);
 				var value = values[key].value;
 				if (typeof value === 'number') {
 					value = value.toLocaleString();
@@ -61,7 +66,7 @@
 						value = value + " (" + convertDate(values[key].date) + ")";
 					}
 				}
-				$("#" + detailType + " .val_" + key).html(value);
+				$("#" + typeOfMeasure + " .val_" + key).html(value);
 			}
 		});
 	}
@@ -86,12 +91,15 @@
 
 	function drawCharts() {
 		$.each(chartData.charts, function (sensorType, data) {
+			if (!labels.get(sensorType)) {
+				return;
+			}
 			var dataTable = new google.visualization.DataTable();
 			dataTable.addColumn('datetime', 'Time');
 			dataTable.addColumn('number', labels.get(sensorType));
 			var arrayLength = data.length;
 			for (var i = 0; i < arrayLength; i++) {
-				var xAxisDate = new Date(data[i][0] * 100000);
+				var xAxisDate = new Date(data[i][0]);
 				var yValue = data[i][1];
 				dataTable.addRow([xAxisDate, yValue]);
 			}
@@ -102,7 +110,7 @@
 				formatDate = new google.visualization.DateFormat({pattern: 'dd.MM.yyyy HH:mm'});
 			}
 			formatDate.format(dataTable, 0);
-			var chart = new google.visualization.LineChart(document.getElementById(sensorType));
+			var chart = new google.visualization.LineChart(document.getElementById("chart_" + sensorType));
 			var formatString = "dd.MM.";
 			if (getPeriod() === "day") {
 				formatString = "HH:mm";

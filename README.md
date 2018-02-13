@@ -8,8 +8,8 @@
 - ladebalken
 - only update if focus
 - landscape iphone niht unbedingt zwei nebeneinander
-- durchschnitt / höchst / niedrigstwert
-- daten von ajax speichern für redraw der diagramme bei resize
+- durchschnitt / hï¿½chst / niedrigstwert
+- daten von ajax speichern fï¿½r redraw der diagramme bei resize
 - build prozess unterschied in persistence.xml
 - add sensor id to hash
 - setup google container
@@ -18,6 +18,10 @@
 - return all in one json
 - include above the fold in jsf
 - switch to google build https://cloud.google.com/container-builder/docs/how-to/build-triggers
+- maybe change data model (introduce type / value column, remove current temperature, etc. colums) as programming might be easier (but might decrease performance) - also it would be
+- compare values stored in luftdaten.info with mine
+- adjust build for branch different than master
+
 
 # create google cluster
 https://cloud.google.com/kubernetes-engine/docs/tutorials/persistent-disk?hl=de
@@ -41,6 +45,7 @@ kubectl create -f kubernetes-feinstaubr-deployment.yaml
 
 
 psql -U postgres --password -f c:\temp\feinstaubr.sql
+pg_dump -U postgres --password feinstaub>dump
 
 C:\temp>
 cloud_sql_proxy_x64 -instances=feinstaubr:europe-west3:feinstaubr-db=tcp:5432 -credential_file=C:\Users\papend\AppData\Local\Temp\Feinstaubr-c5b048be0f3a.json
@@ -49,7 +54,7 @@ cloud_sql_proxy_x64 -instances=feinstaubr:europe-west3:feinstaubr-db=tcp:5432 -c
 https://cloud.google.com/sql/docs/postgres/connect-container-engine
 1. dienst konto anlegen
 2. credentials in gcloud anlegen
-3. credentials für kubernetes anlegen:
+3. credentials fï¿½r kubernetes anlegen:
 kubectl create secret generic cloudsql-instance-credentials --from-file=credentials.json=C:\Users\papend\AppData\Local\Temp\Feinstaubr-c5b048be0f3a.json
 kubectl create secret generic cloudsql-db-credentials --from-literal=username=proxyuser --from-literal=password=nYgSmYSeyQnctlcC16xO
 

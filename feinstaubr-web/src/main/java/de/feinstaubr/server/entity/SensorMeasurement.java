@@ -3,12 +3,17 @@ package de.feinstaubr.server.entity;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 @Entity
+@Table(name="sensormeasurementvalues")
 public class SensorMeasurement {
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -16,12 +21,11 @@ public class SensorMeasurement {
 	
 	private Date date;
 	private String sensorId;
-	private String softwareVersion;
-	private BigDecimal temperatur;
-	private BigDecimal humidity;
-	private BigDecimal p1;
-	private BigDecimal p2;
-
+	private BigDecimal value;
+	
+	@ManyToOne
+	@JoinColumn(name="type")
+	private SensorMeasurementType type;
 	
 	public Date getDate() {
 		return date;
@@ -35,44 +39,25 @@ public class SensorMeasurement {
 	public void setSensorId(String sensorId) {
 		this.sensorId = sensorId;
 	}
-	public String getSoftwareVersion() {
-		return softwareVersion;
+	public BigDecimal getValue() {
+		return value;
 	}
-	public void setSoftwareVersion(String softwareVersion) {
-		this.softwareVersion = softwareVersion;
+	public void setValue(BigDecimal value) {
+		this.value = value;
 	}
-	public BigDecimal getTemperatur() {
-		return temperatur;
+	public SensorMeasurementType getType() {
+		return type;
 	}
-	public void setTemperatur(BigDecimal temperatur) {
-		this.temperatur = temperatur;
-	}
-	public BigDecimal getHumidity() {
-		return humidity;
-	}
-	public void setHumidity(BigDecimal humidity) {
-		this.humidity = humidity;
-	}
-	public BigDecimal getP1() {
-		return p1;
-	}
-	public void setP1(BigDecimal p1) {
-		this.p1 = p1;
-	}
-	public BigDecimal getP2() {
-		return p2;
-	}
-	public void setP2(BigDecimal p2) {
-		this.p2 = p2;
+	public void setType(SensorMeasurementType type) {
+		this.type = type;
 	}
 	@Override
 	public String toString() {
-		return "SensorMeasurement [id=" + id + ", date=" + date + ", sensorId=" + sensorId + ", softwareVersion="
-				+ softwareVersion + ", temperatur=" + temperatur + ", humidity=" + humidity + ", p1=" + p1 + ", p2="
-				+ p2 + "]";
+		return "SensorMeasurement [id=" + id + ", value=" + value + ", date=" + date + ", sensorId=" + sensorId 
+				+ ", type=" + type + "]";
 	}
 	
 	
-	
+
 	
 }
