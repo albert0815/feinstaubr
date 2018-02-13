@@ -19,9 +19,10 @@ public class TraceServiceProducer {
 
 	@PostConstruct
 	public void setupTracerService() {
-		LOGGER.info("test of logging");
+		LOGGER.info("init TraceGrpcApiService");
 		
-	    try {			
+	    try {
+	    	System.out.println("init TraceGrpcApiService");
 	    	TraceService traceService = TraceGrpcApiService.builder()
 		        .setProjectId("feinstaubr").build();
 	    	Trace.init(traceService);
