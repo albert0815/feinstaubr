@@ -13,6 +13,7 @@ public class TraceServiceProducer {
 
 	@PostConstruct
 	public void setupTracerService() {
+		LOGGER.info("test of logging");
 		
 //	    try {			
 //	    	TraceService traceService = TraceGrpcApiService.builder()

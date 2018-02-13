@@ -1,27 +1,14 @@
 # TODOs
-- Include version in build
-- create backup job for db (see https://stackoverflow.com/questions/24718706/backup-restore-a-dockerized-postgresql-database)
-- last 24h in sensor bean, include type and id filter
-- include other types in web page
-- make it responsive
 - activate gzip for json
-- ladebalken
-- only update if focus
 - landscape iphone niht unbedingt zwei nebeneinander
-- durchschnitt / h�chst / niedrigstwert
-- daten von ajax speichern f�r redraw der diagramme bei resize
 - build prozess unterschied in persistence.xml
-- add sensor id to hash
-- setup google container
 - fehler wenn sensor nicht da ist
 - anzeige der diagramme/current nur wenn daten da sind (material motion slide in)
-- return all in one json
-- include above the fold in jsf
 - switch to google build https://cloud.google.com/container-builder/docs/how-to/build-triggers
-- maybe change data model (introduce type / value column, remove current temperature, etc. colums) as programming might be easier (but might decrease performance) - also it would be
 - compare values stored in luftdaten.info with mine
 - adjust build for branch different than master
-
+- scroll to previous / next day
+- include google cloud trace / google cloud logging
 
 # create google cluster
 https://cloud.google.com/kubernetes-engine/docs/tutorials/persistent-disk?hl=de

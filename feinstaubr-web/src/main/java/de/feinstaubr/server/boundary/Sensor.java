@@ -147,7 +147,7 @@ public class Sensor {
 		long start;
 		start = System.currentTimeMillis();
 		List<SensorMeasurementType> resultList = em.createQuery(query).setHint("javax.persistence.fetchgraph", graph).getResultList();
-		LOGGER.info("duration for db: " + (System.currentTimeMillis() - start));
+		LOGGER.finest("duration for db: " + (System.currentTimeMillis() - start));
 //		tracer.endSpan(traceContext);
 		if (resultList.isEmpty()) {
 			return Response.ok().build();
@@ -197,7 +197,7 @@ public class Sensor {
 							.add("value", sum.divide(new BigDecimal(measurementsSize), RoundingMode.HALF_UP))
 						)
 					);
-			LOGGER.info("duration for min/max/delete for " + measurementType.getType() + " : " + (System.currentTimeMillis() - start) + " - reduced from " + sizeBefore + " -> " + measurementType.getMeasurements().size());
+			LOGGER.finest("duration for min/max/delete for " + measurementType.getType() + " : " + (System.currentTimeMillis() - start) + " - reduced from " + sizeBefore + " -> " + measurementType.getMeasurements().size());
 		}
 
 		Simplify<SensorMeasurement> simplify = new Simplify<>(new SensorMeasurement[0], new PointExtractor<SensorMeasurement>() {
@@ -223,7 +223,7 @@ public class Sensor {
 				chartEntries.add(Json.createArrayBuilder().add(m.getDate().getTime()).add(m.getValue()));
 			}
 			chartsJson.add(type.getType(), chartEntries);
-			LOGGER.info("duration for simplify for " + type.getType() + ": " + (System.currentTimeMillis() - start) + " - reduced from " + type.getMeasurements().size() + " -> " + simplified.length);
+			LOGGER.finest("duration for simplify for " + type.getType() + ": " + (System.currentTimeMillis() - start) + " - reduced from " + type.getMeasurements().size() + " -> " + simplified.length);
 		}
 
 		List<SensorMeasurement> currentSensorData = getCurrentSensorData(sensorId);
