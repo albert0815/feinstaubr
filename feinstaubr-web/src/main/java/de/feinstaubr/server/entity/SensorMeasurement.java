@@ -20,12 +20,17 @@ public class SensorMeasurement {
 	private Long id;
 	
 	private Date date;
-	private String sensorId;
+	
+	@ManyToOne
+	@JoinColumn(name="sensorId")
+	private Sensor sensorId;
+	
 	private BigDecimal value;
 	
 	@ManyToOne
 	@JoinColumn(name="type")
 	private SensorMeasurementType type;
+	
 	
 	public Date getDate() {
 		return date;
@@ -33,10 +38,10 @@ public class SensorMeasurement {
 	public void setDate(Date date) {
 		this.date = date;
 	}
-	public String getSensorId() {
+	public Sensor getSensorId() {
 		return sensorId;
 	}
-	public void setSensorId(String sensorId) {
+	public void setSensorId(Sensor sensorId) {
 		this.sensorId = sensorId;
 	}
 	public BigDecimal getValue() {

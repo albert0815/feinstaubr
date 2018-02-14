@@ -12,12 +12,16 @@
 
 	
 	function loadData() {
-		$("#progressbar").css("display", "block");
-		jqXHR = $.getJSON("rest/sensor/7620363/" + getPeriod())
+		if (!getSensorId()) {
+			$("#progressbar").css("display", "none");
+			return;
+		}
+		jqXHR = $.getJSON("rest/sensor/" + getSensorId() + "/" + getPeriod())
 			.done(function(data) {
 				chartData = data;
 				drawCurrentMinMax();
 				drawCharts();
+				$(".mdc-snackbar").removeClass("mdc-snackbar--active");
 			}).fail(function(jqXHR, status, error) {
 				if (jqXHR.statusText !== "abort") {
 					$(".mdc-snackbar__text").html("Ein Fehler ist aufgetreten - " + error);
@@ -79,7 +83,18 @@
 		}
 		return period;
 	}
-
+	function getSensorId() {
+		return getParameterByName("sensorId");
+	}
+	function getParameterByName(name, url) {
+	    if (!url) url = window.location.href;
+	    name = name.replace(/[\[\]]/g, "\\$&");
+	    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+	        results = regex.exec(url);
+	    if (!results) return null;
+	    if (!results[2]) return '';
+	    return decodeURIComponent(results[2].replace(/\+/g, " "));
+	}
 	function drawCharts() {
 		$.each(chartData.charts, function (sensorType, data) {
 			if (!labels.get(sensorType)) {

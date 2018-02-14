@@ -22,10 +22,10 @@ public class TraceServiceProducer {
 		LOGGER.info("init TraceGrpcApiService");
 		
 	    try {
-	    	System.out.println("init TraceGrpcApiService");
 	    	TraceService traceService = TraceGrpcApiService.builder()
 		        .setProjectId("feinstaubr").build();
 	    	Trace.init(traceService);
+			LOGGER.info("init TraceGrpcApiService done");
 		} catch (IOException e) {
 			LOGGER.log(Level.SEVERE, "unable to initialize trace service", e);
 		}

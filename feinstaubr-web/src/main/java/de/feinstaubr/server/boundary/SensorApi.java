@@ -42,15 +42,17 @@ import com.google.cloud.trace.Trace;
 import com.google.cloud.trace.Tracer;
 import com.google.cloud.trace.core.TraceContext;
 
+import de.feinstaubr.server.entity.Sensor;
 import de.feinstaubr.server.entity.SensorMeasurement;
 import de.feinstaubr.server.entity.SensorMeasurementType;
 import de.feinstaubr.server.entity.SensorMeasurementType_;
 import de.feinstaubr.server.entity.SensorMeasurement_;
+import de.feinstaubr.server.entity.Sensor_;
 
 @Stateless
 @Path("sensor")
-public class Sensor {
-	private static final Logger LOGGER = Logger.getLogger(Sensor.class.getName());
+public class SensorApi {
+	private static final Logger LOGGER = Logger.getLogger(SensorApi.class.getName());
 	private static final Map<String, Integer[]> INTERVAL_MAP = new HashMap<>();
 	
 	static {
@@ -67,8 +69,21 @@ public class Sensor {
 	@Path("/save")
 	@POST
 	public void save(JsonObject o) {
-//	    Tracer tracer = Trace.getTracer();
-//		TraceContext traceContext = tracer.startSpan("save");
+		
+		if (!o.containsKey("esp8266id") || !o.containsKey("sensordatavalues")) {
+			return;
+		}
+		
+		Sensor sensor = em.find(Sensor.class, o.getString("esp8266id"));
+		if (sensor == null) {
+			return;
+		}
+
+		
+	    Tracer tracer = Trace.getTracer();
+		TraceContext traceContext = tracer.startSpan("save");
+		
+		
 		Date now = new Date();
 		JsonArray sensorDataValues = o.getJsonArray("sensordatavalues");
 		for (int i = 0; i < sensorDataValues.size(); i++) {
@@ -89,14 +104,14 @@ public class Sensor {
 			} else {
 				measurement.setDate(now);
 			}
-			measurement.setSensorId(o.getString("esp8266id"));
+			measurement.setSensorId(sensor);
 			
 			measurement.setType(measurementType);
 			measurement.setValue(new BigDecimal(sensorData.getString("value")));
 			LOGGER.fine("saving new measurement " + measurement);
 			em.persist(measurement);
 		}
-//		tracer.endSpan(traceContext);
+		tracer.endSpan(traceContext);
 	}
 	
 	public List<SensorMeasurement> getCurrentSensorData(String sensorId) {
@@ -109,9 +124,9 @@ public class Sensor {
 		Subquery<Date> sq = query.subquery(Date.class);
 		Root<SensorMeasurement> subQueryRoot = sq.from(SensorMeasurement.class);
 		sq.select(criteriaBuilder.greatest(subQueryRoot.get(SensorMeasurement_.date)));
-		sq.where(criteriaBuilder.equal(subQueryRoot.get(SensorMeasurement_.sensorId), sensorId));
+		sq.where(criteriaBuilder.equal(subQueryRoot.get(SensorMeasurement_.sensorId).get(Sensor_.sensorId), sensorId));
 
-		Predicate predicateId = criteriaBuilder.equal(root.get(SensorMeasurement_.sensorId), sensorId);
+		Predicate predicateId = criteriaBuilder.equal(root.get(SensorMeasurement_.sensorId).get(Sensor_.sensorId), sensorId);
 		Predicate predicateDate = criteriaBuilder.equal(root.get(SensorMeasurement_.date), sq);
 		
 		query.where(criteriaBuilder.and(predicateId, predicateDate)).orderBy(criteriaBuilder.asc(root.get(SensorMeasurement_.type).get(SensorMeasurementType_.sortOrder)));
@@ -141,7 +156,7 @@ public class Sensor {
 		
 		Join<SensorMeasurementType, SensorMeasurement> measurementValuesJoin = root.join(SensorMeasurementType_.measurements, JoinType.LEFT);
 
-		Predicate predicateId = criteriaBuilder.equal(measurementValuesJoin.get(SensorMeasurement_.sensorId), sensorId);
+		Predicate predicateId = criteriaBuilder.equal(measurementValuesJoin.get(SensorMeasurement_.sensorId).get(Sensor_.sensorId), sensorId);
 		Predicate predicatePeriod = criteriaBuilder.greaterThan(measurementValuesJoin.get(SensorMeasurement_.date), getPeriodStartDate(period).getTime());
 		query.where(criteriaBuilder.and(predicateId, predicatePeriod));
 		
@@ -266,6 +281,15 @@ public class Sensor {
 		Root<SensorMeasurementType> root = query.from(SensorMeasurementType.class);
 		query.select(root);
 		query.orderBy(criteriaBuilder.asc(root.get(SensorMeasurementType_.sortOrder)));
+		return em.createQuery(query).getResultList();
+	}
+
+	public List<Sensor> getSensors() {
+		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+		CriteriaQuery<Sensor> query = criteriaBuilder.createQuery(Sensor.class);
+		Root<Sensor> root = query.from(Sensor.class);
+		query.select(root);
+		query.orderBy(criteriaBuilder.asc(root.get(Sensor_.name)));
 		return em.createQuery(query).getResultList();
 	}
 	

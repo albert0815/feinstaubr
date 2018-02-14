@@ -28,7 +28,7 @@ insert into sensormeasurementvalues (id, date, sensorid, type, value) select nex
 --version 0.1.1 branch newdatamodel
 
 create table SensorMeasurementType (type varchar(255) not null, epsilonForSimplify float8 not null, label varchar(255), logo varchar(255), minDiffBetweenTwoValues numeric(19, 2), sortOrder int4 not null, title varchar(255) not null, primary key (type))
-GRANT SELECT, INSERT, UPDATE, DELETE ON SensorMeasurementType TO proxyuser;    
+GRANT SELECT ON SensorMeasurementType TO proxyuser;    
 
 insert into SensorMeasurementType values ('temperature', 2, '°C', 'wb_sunny', 0.1, 1, 'Temperatur');
 insert into SensorMeasurementType values ('humidity', 2, '%', 'grain', 2, 2, 'Luftfeuchtigkeit');
@@ -38,4 +38,13 @@ insert into SensorMeasurementType values ('SDS_P2', 2, 'PM10 in μg/m³', 'locat
 select * from sensormeasurementvalues where type not in ('temperature', 'humidity', 'SDS_P1', 'SDS_P2');
 delete from sensormeasurementvalues where type not in ('temperature', 'humidity', 'SDS_P1', 'SDS_P2');
 alter table sensormeasurementvalues add constraint FKtew64vyo2iwrbxpr5ohy0a4wd foreign key (sensorMeasurementType_type) references SensorMeasurementType;
+
+
+--version 0.3
+create table sensor (sensorId varchar(255), name varchar(255), primary key (sensorId));
+insert into sensor values ('7620363', 'Außensensor');
+insert into sensor values ('30:ae:a4:22:ca:f4', 'Innensensor');
+alter table sensormeasurementvalues add constraint FKlif2ids4jsfhjk3grukjdfsb foreign key (sensorId) references sensor;
+GRANT SELECT ON sensor TO proxyuser;    
+
 

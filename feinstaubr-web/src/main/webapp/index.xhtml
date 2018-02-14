@@ -1,7 +1,14 @@
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:h="http://java.sun.com/jsf/html"
 		xmlns:f="http://java.sun.com/jsf/core"
 			xmlns:ui="http://java.sun.com/jsf/facelets">
+
+<f:metadata>
+	<f:viewParam name="sensorId" value="#{indexViewController.sensorId}" />
+	<f:event type="preRenderView" listener="#{indexViewController.init}" />
+</f:metadata>
+
 <head>
 <title>Feinstaubr</title>
 <!-- from https://material.io/components -->
@@ -16,6 +23,9 @@
 .chart{
 	height:15rem;
 }
+.hidden{
+	display:none;
+}
 </style>
 </head>
 <body class="mdc-typography">
@@ -25,20 +35,49 @@
 	      <span class="mdc-toolbar__title">Feinstaubr</span>
 	    </section>
 	  </div>
-	  	<div id="progressbar" role="progressbar" class="mdc-linear-progress mdc-linear-progress--indeterminate">
-	  <div class="mdc-linear-progress__buffering-dots"></div>
-	  <div class="mdc-linear-progress__buffer"></div>
-	  <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
-	    <span class="mdc-linear-progress__bar-inner"></span>
-	  </div>
-	  <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
-	    <span class="mdc-linear-progress__bar-inner"></span>
-	  </div>
+	  <div id="progressbar" role="progressbar" class="mdc-linear-progress mdc-linear-progress--indeterminate">
+		  <div class="mdc-linear-progress__buffering-dots"></div>
+		  <div class="mdc-linear-progress__buffer"></div>
+		  <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
+		    <span class="mdc-linear-progress__bar-inner"></span>
+		  </div>
+		  <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
+		    <span class="mdc-linear-progress__bar-inner"></span>
+		  </div>
 	</div>				
 	  
 	</header>
 		
 	<main class="mdc-toolbar-fixed-adjust">
+	
+	
+	<div class="mdc-layout-grid">
+	      <div class="mdc-select" role="listbox" id="sensor-select">
+			  <div class="mdc-select__surface" tabindex="0">
+			    <h:panelGroup layout="block" styleClass="#{empty indexViewController.sensorId?'mdc-select__label':'mdc-select__label--float-above mdc-select__label'}">Sensor wählen</h:panelGroup>
+			    <div class="mdc-select__selected-text"></div>
+			    <div class="mdc-select__bottom-line"></div>
+			  </div>
+			  <div class="mdc-menu mdc-select__menu">
+			    <ul class="mdc-list mdc-menu__items">
+			    	<ui:repeat var="sensor" value="#{indexViewController.sensors}">
+				    	<h:panelGroup rendered="#{indexViewController.sensorId == sensor.sensorId}">
+						      <li class="mdc-list-item" role="option" aria-selected="aria-selected" tabindex="0" data-id="#{sensor.sensorId}">
+						        #{sensor.name}
+						      </li>
+				    	</h:panelGroup>
+				    	<h:panelGroup rendered="#{indexViewController.sensorId != sensor.sensorId}">
+						      <li class="mdc-list-item" role="option" tabindex="0" data-id="#{sensor.sensorId}">
+						        #{sensor.name}
+						      </li>
+				    	</h:panelGroup>
+			      </ui:repeat>
+			    </ul>
+			  </div>
+			</div>
+	</div>
+	
+	<h:panelGroup layout="block" styleClass="#{empty indexViewController.sensorId?'hidden':''}">
 	<div class="mdc-layout-grid">
 		<div class="mdc-layout-grid__inner">
 			<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
@@ -123,7 +162,7 @@
 			</ui:repeat>
 		</div>
 	</div>
-	
+	</h:panelGroup><!-- main content -->
 	<div class="mdc-snackbar"
 	     aria-live="assertive"
 	     aria-atomic="true"
@@ -139,10 +178,11 @@
 
 	<script type="text/javascript"
 		src="https://www.gstatic.com/charts/loader.js"></script>
-	<script type="text/javascript" src="resources/script.js" />
+	<script type="text/javascript" src="resources/script.js"/>
 	<script
 		src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
 	<script>
+	$(function() {
 		var visProp = getHiddenProp();
 		if (visProp) {
 		  var evtname = visProp.replace(/[H|h]idden/,'') + 'visibilitychange';
@@ -155,6 +195,15 @@
 		google.charts.setOnLoadCallback(loadData);
 		updateActiveTab();
 		window.mdc.autoInit();
+		
+        var root = document.getElementById('sensor-select');
+        var select = new mdc.select.MDCSelect(root);
+
+        root.addEventListener('MDCSelect:change', function() {
+          var item = select.selectedOptions[0];
+          window.location.href = window.location.pathname + "?sensorId=" + item.getAttribute("data-id");
+        });
+	});
 	</script>
 </body>
 </html>
