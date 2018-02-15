@@ -195,7 +195,7 @@ public class SensorApi {
 				sum = sum.add(sensorMeasurement.getValue());
 				
 				//maybe this is not needed..
-				if (lastValue.subtract(sensorMeasurement.getValue()).abs().compareTo(measurementType.getMinDiffBetweenTwoValues()) <= 0 || i == 0) {
+				if (lastValue.subtract(sensorMeasurement.getValue()).abs().compareTo(measurementType.getMinDiffBetweenTwoValues()) <= 0 && i > 0) {
 					measurements.remove(i);
 				} else {
 					lastValue = sensorMeasurement.getValue();

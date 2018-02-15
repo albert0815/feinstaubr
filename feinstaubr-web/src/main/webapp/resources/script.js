@@ -9,6 +9,7 @@
 	labels.set("humidity", " %");
 	labels.set("SDS_P1", " PM10 in μg/m³");
 	labels.set("SDS_P2", " PM2.5 in μg/m³");
+	labels.set("pressure", " hPa");
 
 	
 	function loadData() {
@@ -170,6 +171,7 @@
 				}
 			};
 	
+			$("#" + sensorType).removeClass("hidden");
 			chart.draw(dataTable, options);
 		});
 	}

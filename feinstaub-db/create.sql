@@ -47,4 +47,5 @@ insert into sensor values ('30:ae:a4:22:ca:f4', 'Innensensor');
 alter table sensormeasurementvalues add constraint FKlif2ids4jsfhjk3grukjdfsb foreign key (sensorId) references sensor;
 GRANT SELECT ON sensor TO proxyuser;    
 
+insert into SensorMeasurementType values ('pressure', 2, ' hPa', 'wb_iridescent', 2, 4, 'Luftdruck');
 
