@@ -114,6 +114,20 @@ public class SensorApi {
 		tracer.endSpan(traceContext);
 	}
 	
+	@Path("{id}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getCurrentSensorDataJson(@PathParam("id") String sensorId) {
+		List<SensorMeasurement> list = getCurrentSensorData(sensorId);
+		JsonArrayBuilder resultArray = Json.createArrayBuilder();
+		for (SensorMeasurement m : list) {
+			resultArray.add(Json.createObjectBuilder()
+					.add(m.getType().getType(), m.getValue())
+			);
+		}
+		return Response.ok(resultArray.build()).build();
+	}
+	
 	public List<SensorMeasurement> getCurrentSensorData(String sensorId) {
 		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 		CriteriaQuery<SensorMeasurement> query = criteriaBuilder.createQuery(SensorMeasurement.class);
