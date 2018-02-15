@@ -158,6 +158,7 @@
 				curveType : 'function',
 				vAxis : {
 					minValue : 0,
+					format: '0'
 				},
 				hAxis : {
 					gridlines : {
