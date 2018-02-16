@@ -121,7 +121,7 @@ public class SensorApi {
 		List<SensorMeasurement> list = getCurrentSensorData(sensorId);
 		JsonObjectBuilder result = Json.createObjectBuilder();
 		for (SensorMeasurement m : list) {
-			result.add(m.getType().getTitle(), m.getValue());
+			result.add(m.getType().getType(), m.getValue());
 		}
 		return Response.ok(result.build()).build();
 	}
