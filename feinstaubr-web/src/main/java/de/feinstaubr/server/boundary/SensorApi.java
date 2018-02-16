@@ -119,13 +119,11 @@ public class SensorApi {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getCurrentSensorDataJson(@PathParam("id") String sensorId) {
 		List<SensorMeasurement> list = getCurrentSensorData(sensorId);
-		JsonArrayBuilder resultArray = Json.createArrayBuilder();
+		JsonObjectBuilder result = Json.createObjectBuilder();
 		for (SensorMeasurement m : list) {
-			resultArray.add(Json.createObjectBuilder()
-					.add(m.getType().getType(), m.getValue())
-			);
+			result.add(m.getType().getTitle(), m.getValue());
 		}
-		return Response.ok(resultArray.build()).build();
+		return Response.ok(result.build()).build();
 	}
 	
 	public List<SensorMeasurement> getCurrentSensorData(String sensorId) {
