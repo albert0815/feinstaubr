@@ -10,6 +10,7 @@
 	labels.set("SDS_P1", " PM10 in μg/m³");
 	labels.set("SDS_P2", " PM2.5 in μg/m³");
 	labels.set("pressure", " hPa");
+	labels.set("co2", " PPM CO2");
 
 	
 	function loadData() {
