@@ -144,7 +144,7 @@
 			}
 			var yMinValue = 0;
 			if (sensorType === 'pressure') {
-				yMinValue = 700;
+				yMinValue = undefined;
 			}
 			
 			var options = {
