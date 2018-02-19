@@ -19,6 +19,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -108,7 +109,17 @@ public class SensorApi {
 			
 			measurement.setType(measurementType);
 			measurement.setValue(new BigDecimal(sensorData.getString("value")));
-			LOGGER.fine("saving new measurement " + measurement);
+			if ("co2".equals(measurementType.getType())) {
+				double ro;
+				try {
+					ro = getRo(sensor.getSensorId());
+				} catch (NoResultException e) {
+					ro = Mq135Calculator.getRo(measurement.getValue().intValue());
+				}
+				BigDecimal calculatedPpm = new BigDecimal(Mq135Calculator.getPpm(measurement.getValue().intValue(), ro));
+				measurement.setCalculatedValue(calculatedPpm);
+			}
+			LOGGER.info("saving new measurement " + measurement);
 			em.persist(measurement);
 		}
 		tracer.endSpan(traceContext);
@@ -121,11 +132,35 @@ public class SensorApi {
 		List<SensorMeasurement> list = getCurrentSensorData(sensorId);
 		JsonObjectBuilder result = Json.createObjectBuilder();
 		for (SensorMeasurement m : list) {
-			result.add(m.getType().getType(), m.getValue().setScale(1, RoundingMode.HALF_UP));
+			BigDecimal value = m.getValue().setScale(1, RoundingMode.HALF_UP);
+			result.add(m.getType().getType(), value);
+		}
+		SimpleDateFormat format = new SimpleDateFormat("dd.MM. HH:mm");
+		if (!list.isEmpty()) {
+			result.add("date", format.format(list.get(0).getDate()));
 		}
 		return Response.ok(result.build()).build();
 	}
 	
+	private double getRo(String sensorId) {
+		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+		CriteriaQuery<Number> query = criteriaBuilder.createQuery(Number.class);
+		Root<SensorMeasurement> root = query.from(SensorMeasurement.class);
+		query.select(criteriaBuilder.min(root.get(SensorMeasurement_.value)));
+		Predicate predicateId = criteriaBuilder.equal(root.get(SensorMeasurement_.sensorId).get(Sensor_.sensorId), sensorId);
+		Predicate predicateType = criteriaBuilder.equal(root.get(SensorMeasurement_.type).get(SensorMeasurementType_.type), "co2");
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -7);
+		Predicate predicateLastWeek = criteriaBuilder.greaterThan(root.get(SensorMeasurement_.date), cal.getTime());
+		query.where(criteriaBuilder.and(predicateId, predicateLastWeek, predicateType));
+		Number singleResult = em.createQuery(query).getSingleResult();
+		if (singleResult == null) {
+			throw new NoResultException();
+		}
+		int minimumOfLast7Days = singleResult.intValue();
+		return Mq135Calculator.getRo(minimumOfLast7Days);
+	}
+
 	public List<SensorMeasurement> getCurrentSensorData(String sensorId) {
 		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 		CriteriaQuery<SensorMeasurement> query = criteriaBuilder.createQuery(SensorMeasurement.class);

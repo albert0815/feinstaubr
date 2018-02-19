@@ -86,6 +86,20 @@ public class ImportData extends TestCase {
 		target.request().post(Entity.json(o));
 
 	}
+	public void testCo2() throws IOException {
+		Client client = ClientBuilder.newClient();
+		WebTarget target = client.target("http://localhost:8080/rest/sensor/save");
+		JsonObject o = Json.createObjectBuilder()
+				.add("esp8266id", "30:ae:a4:22:ca:f4")
+				.add("sensordatavalues", 
+						Json.createArrayBuilder()
+						.add(Json.createObjectBuilder().add("value_type", "co2").add("value", "10"))
+					)
+				.add("date", "2018-02-03T10:00:00.000Z")
+				.build();
+		target.request().post(Entity.json(o));
+
+	}
 	public void testSave() throws IOException {
 		Map<String, String> sensorTypeName = new HashMap<>();
 		sensorTypeName.put("p1", "SDS_P1");

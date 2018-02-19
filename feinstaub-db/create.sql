@@ -49,3 +49,5 @@ GRANT SELECT ON sensor TO proxyuser;
 
 insert into SensorMeasurementType values ('pressure', 2, ' hPa', 'wb_iridescent', 2, 4, 'Luftdruck');
 
+--version 0.4
+alter table sensormeasurementvalues add column calculatedValue numeric(19, 2) null;

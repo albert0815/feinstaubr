@@ -26,6 +26,7 @@ public class SensorMeasurement {
 	private Sensor sensorId;
 	
 	private BigDecimal value;
+	private BigDecimal calculatedValue;
 	
 	@ManyToOne
 	@JoinColumn(name="type")
@@ -44,7 +45,19 @@ public class SensorMeasurement {
 	public void setSensorId(Sensor sensorId) {
 		this.sensorId = sensorId;
 	}
+	
+	public BigDecimal getCalculatedValue() {
+		return calculatedValue;
+	}
+	public void setCalculatedValue(BigDecimal calculatedValue) {
+		this.calculatedValue = calculatedValue;
+	}
 	public BigDecimal getValue() {
+		if (calculatedValue != null) {
+			return calculatedValue;
+		} else {
+			
+		}
 		return value;
 	}
 	public void setValue(BigDecimal value) {
