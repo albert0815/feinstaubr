@@ -110,13 +110,26 @@ public class SensorApi {
 			measurement.setType(measurementType);
 			measurement.setValue(new BigDecimal(sensorData.getString("value")));
 			if ("co2".equals(measurementType.getType())) {
-				double ro;
-				try {
-					ro = getRo(sensor.getSensorId());
-				} catch (NoResultException e) {
-					ro = Mq135Calculator.getRo(measurement.getValue().intValue());
+				if (measurement.getValue().intValue() == 0) {
+					LOGGER.warning("ignoring value 0 as this is clearly wrong");
+					return;
 				}
-				BigDecimal calculatedPpm = new BigDecimal(Mq135Calculator.getPpm(measurement.getValue().intValue(), ro));
+				int minimum;
+				try {
+					minimum = getMinimumCo2ValueOfLast7Days(sensor.getSensorId());
+					if (minimum > measurement.getValue().intValue()) {
+						minimum = measurement.getValue().intValue();
+					}
+				} catch (NoResultException e) {
+					minimum = measurement.getValue().intValue();
+				}
+				double ro = Mq135Calculator.getRo(minimum);
+				int ppm = Mq135Calculator.getPpm(measurement.getValue().intValue(), ro);
+				if (ppm == -1) {
+					LOGGER.warning("ignoring value " + sensorData.getString("value") + " as the corresponding ppm cannot be calculated due to invalid ro... ");
+					return;
+				}
+				BigDecimal calculatedPpm = new BigDecimal(ppm);
 				measurement.setCalculatedValue(calculatedPpm);
 			}
 			LOGGER.info("saving new measurement " + measurement);
@@ -142,7 +155,7 @@ public class SensorApi {
 		return Response.ok(result.build()).build();
 	}
 	
-	private double getRo(String sensorId) {
+	private int getMinimumCo2ValueOfLast7Days(String sensorId) {
 		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 		CriteriaQuery<Number> query = criteriaBuilder.createQuery(Number.class);
 		Root<SensorMeasurement> root = query.from(SensorMeasurement.class);
@@ -157,8 +170,7 @@ public class SensorApi {
 		if (singleResult == null) {
 			throw new NoResultException();
 		}
-		int minimumOfLast7Days = singleResult.intValue();
-		return Mq135Calculator.getRo(minimumOfLast7Days);
+		return singleResult.intValue();
 	}
 
 	public List<SensorMeasurement> getCurrentSensorData(String sensorId) {

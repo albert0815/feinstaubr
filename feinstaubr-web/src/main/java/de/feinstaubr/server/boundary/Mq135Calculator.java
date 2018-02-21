@@ -16,7 +16,7 @@ public class Mq135Calculator {
 	}
 	
 	private static int getResistance(int analogInput) {
-		return (int) ((((double)1023/analogInput) - 1)*1000);
+		return (int) ((((double)4095/analogInput) - 1)*10);
 	}
 	
 }
