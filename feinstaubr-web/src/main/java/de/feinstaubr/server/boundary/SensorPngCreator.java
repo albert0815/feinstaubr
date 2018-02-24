@@ -11,6 +11,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -38,7 +39,7 @@ public class SensorPngCreator extends HttpServlet {
 		List<SensorMeasurement> balkon = sensor.getCurrentSensorData("7620363");
 		List<SensorMeasurement> wohnzimmer = sensor.getCurrentSensorData("30:ae:a4:22:ca:f4");
 			
-
+//build with https://erikflowers.github.io/weather-icons/!!
 		int width = 296;
 		int height = 128;
 		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -61,43 +62,32 @@ public class SensorPngCreator extends HttpServlet {
 //		      }
 //		    }
 		try {
-			Font writingFont = new Font("Georgia", Font.PLAIN, 12);
 			Font iconFont = Font.createFont(Font.TRUETYPE_FONT, SensorPngCreator.class.getResourceAsStream("/MaterialIcons-Regular.ttf"));
-			iconFont = iconFont.deriveFont(Font.PLAIN, 20);
-			ig2.setFont(iconFont);
+			iconFont = iconFont.deriveFont(Font.PLAIN, 26);
+			Font writeFont = Font.createFont(Font.TRUETYPE_FONT, SensorPngCreator.class.getResourceAsStream("/LiberationSans-Regular.ttf"));
+			writeFont = writeFont.deriveFont(Font.PLAIN, 26);
+			Font writeFontSmall = writeFont.deriveFont(Font.PLAIN, 10);
 			ig2.setPaint(Color.black);
 			ig2.setBackground(Color.white);
 			ig2.clearRect(0, 0, width, height);
-			
-			Set<SensorMeasurementType> types = new TreeSet<>(new Comparator<SensorMeasurementType>() {
-				@Override
-				public int compare(SensorMeasurementType o1, SensorMeasurementType o2) {
-					return o1.getSortOrder() - o2.getSortOrder();
-				}
-			});
-			add(types, balkon);
-			add(types, wohnzimmer);
-			int i = 1;
-			for (SensorMeasurementType type : types) {
-				String message = new String(Character.toChars(type.getCodePoint()));
-				ig2.drawString(message, 5, 21 * i++);
-			}
-			ig2.setFont(writingFont);
-			ig2.setPaint(Color.black);
-			ig2.setBackground(Color.white);
 
-			i = 1;
-			for (SensorMeasurementType type : types) {
-				SensorMeasurement m = getMeasurement(type, balkon);
-				if (m != null) {
-					ig2.drawString(m.getValue().setScale(1, RoundingMode.HALF_UP).toString().replace('.', ','), 40, 21 * i - 7);
+			ig2.setFont(writeFontSmall);
+			ig2.drawString("Wohnzimmer", 5, 10);
+			ig2.drawString("Balkon", 155, 10);
+
+			int offsetY = 0;
+			int offsetX = 15;
+			for (List<SensorMeasurement> list : Arrays.asList(wohnzimmer, balkon)) {
+				int x = 1;
+				for (SensorMeasurement m : list) {
+					String message = new String(Character.toChars(m.getType().getCodePoint()));
+					ig2.setFont(iconFont);
+					ig2.drawString(message, offsetY + 5, 28 * x + offsetX);
+					ig2.setFont(writeFont);
+					ig2.drawString(m.getValue().setScale(1, RoundingMode.HALF_UP).toString().replace('.', ','), offsetY + 40, 28 * x - 5 + offsetX);
+					x++;
 				}
-				m = getMeasurement(type, wohnzimmer);
-				if (m != null) {
-					ig2.drawString(m.getValue().setScale(1, RoundingMode.HALF_UP).toString().replace('.', ','), 100, 21 * i - 7);
-				}
-				ig2.drawString(type.getLabel(), 150, 21 * i - 7);
-				i++;
+				offsetY += 150;
 			}
 
 
@@ -130,18 +120,4 @@ public class SensorPngCreator extends HttpServlet {
 
 	}
 
-	private SensorMeasurement getMeasurement(SensorMeasurementType type, List<SensorMeasurement> balkon) {
-		for (SensorMeasurement m : balkon) {
-			if (m.getType().getType().equals(type.getType())) {
-				return m;
-			}
-		}
-		return null;
-	}
-
-	private void add(Set<SensorMeasurementType> types, List<SensorMeasurement> balkon) {
-		for (SensorMeasurement m : balkon) {
-			types.add(m.getType());
-		}
-	}
 }
