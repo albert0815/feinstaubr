@@ -18,6 +18,7 @@ public class SensorMeasurementType {
 	private BigDecimal minDiffBetweenTwoValues;
 	private double epsilonForSimplify;
 	private String title;
+	private int codePoint;
 	
 	@OneToMany(mappedBy="type")
 	@OrderBy("date DESC")
@@ -86,6 +87,14 @@ public class SensorMeasurementType {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public int getCodePoint() {
+		return codePoint;
+	}
+
+	public void setCodePoint(int codePoint) {
+		this.codePoint = codePoint;
 	}
 
 	@Override

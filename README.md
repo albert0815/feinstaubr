@@ -36,6 +36,7 @@ pg_dump -U postgres --password feinstaub>dump
 
 C:\temp>
 cloud_sql_proxy_x64 -instances=feinstaubr:europe-west3:feinstaubr-db=tcp:5432 -credential_file=C:\Users\papend\AppData\Local\Temp\Feinstaubr-c5b048be0f3a.json
+cloud_sql_proxy_x64 -instances=feinstaubr:europe-west3:feinstaubr-db=tcp:8765 -credential_file=C:\Users\dpape\Downloads\Feinstaubr-5461397f5be3.json
 
 # connect to db
 https://cloud.google.com/sql/docs/postgres/connect-container-engine
@@ -51,3 +52,7 @@ https://cloud.google.com/solutions/continuous-delivery-with-travis-ci
 
 # change commiter
 git filter-branch --commit-filter 'export GIT_COMMITTER_NAME="albert0815";export GIT_AUTHOR_NAME="albert0815"; export GIT_AUTHOR_EMAIL=mail@example.com;export GIT_COMMITTER_EMAIL=mail@example.com; git commit-tree "$@"'
+
+
+#licenses
+usage of material design icons from google as per apache 2 license (https://github.com/google/material-design-icons) 

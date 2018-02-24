@@ -51,3 +51,7 @@ insert into SensorMeasurementType values ('pressure', 2, ' hPa', 'wb_iridescent'
 
 --version 0.4
 alter table sensormeasurementvalues add column calculatedValue numeric(19, 2) null;
+
+
+--version 0.5
+alter table sensormeasurementtype add column codepoint int4 not null default 0;
