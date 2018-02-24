@@ -155,6 +155,7 @@ public class SensorApi {
 		return Response.ok(result.build()).build();
 	}
 	
+	
 	private int getMinimumCo2ValueOfLast7Days(String sensorId) {
 		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 		CriteriaQuery<Number> query = criteriaBuilder.createQuery(Number.class);

@@ -10,6 +10,7 @@ import java.awt.font.GlyphVector;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -39,41 +40,31 @@ public class SensorPngCreator extends HttpServlet {
 		List<SensorMeasurement> balkon = sensor.getCurrentSensorData("7620363");
 		List<SensorMeasurement> wohnzimmer = sensor.getCurrentSensorData("30:ae:a4:22:ca:f4");
 			
-//build with https://erikflowers.github.io/weather-icons/!!
 		int width = 296;
 		int height = 128;
 		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D ig2 = bi.createGraphics();
 //		ig2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 //                RenderingHints.VALUE_ANTIALIAS_ON);
-//		try {
-//			Font f = new Font("Times New Roman", Font.PLAIN, 9);
-//			Font f = Font.createFont(Font.TRUETYPE_FONT, SensorPngCreator.class.getResourceAsStream("/MaterialIcons-Regular.ttf"));
-//			ig2.setFont(f);
-//			ig2.drawString("huhu", 0, 0);
-//
-//		    GlyphVector gv = f.createGlyphVector(ig2.getFontRenderContext(), Character.toChars(0xE87D));
-//		    ig2.drawGlyphVector(gv, 0f, (float)gv.getGlyphMetrics(0).getBounds2D().getHeight());
-//		    for (char c = 0x0000; c <= 0xFFFF; c++)
-//		    {
-//		      if (f.canDisplay(c))
-//		      {
-//		    	  //System.out.println("jo");
-//		      }
-//		    }
+
 		try {
 			Font iconFont = Font.createFont(Font.TRUETYPE_FONT, SensorPngCreator.class.getResourceAsStream("/MaterialIcons-Regular.ttf"));
 			iconFont = iconFont.deriveFont(Font.PLAIN, 26);
 			Font writeFont = Font.createFont(Font.TRUETYPE_FONT, SensorPngCreator.class.getResourceAsStream("/LiberationSans-Regular.ttf"));
-			writeFont = writeFont.deriveFont(Font.PLAIN, 26);
+			writeFont = writeFont.deriveFont(Font.PLAIN, 18);
 			Font writeFontSmall = writeFont.deriveFont(Font.PLAIN, 10);
 			ig2.setPaint(Color.black);
 			ig2.setBackground(Color.white);
 			ig2.clearRect(0, 0, width, height);
 
 			ig2.setFont(writeFontSmall);
-			ig2.drawString("Wohnzimmer", 5, 10);
-			ig2.drawString("Balkon", 155, 10);
+			SimpleDateFormat df = new SimpleDateFormat("dd.MM. HH:mm");
+			if (!wohnzimmer.isEmpty()) {
+				ig2.drawString("Wohnzimmer (" + df.format(wohnzimmer.get(0).getDate()) + ")", 5, 10);
+			}
+			if (!balkon.isEmpty()) {
+				ig2.drawString("Balkon (" + df.format(balkon.get(0).getDate()) + ")", 155, 10);
+			}
 
 			int offsetY = 0;
 			int offsetX = 15;
@@ -84,7 +75,7 @@ public class SensorPngCreator extends HttpServlet {
 					ig2.setFont(iconFont);
 					ig2.drawString(message, offsetY + 5, 28 * x + offsetX);
 					ig2.setFont(writeFont);
-					ig2.drawString(m.getValue().setScale(1, RoundingMode.HALF_UP).toString().replace('.', ','), offsetY + 40, 28 * x - 5 + offsetX);
+					ig2.drawString(m.getValue().setScale(1, RoundingMode.HALF_UP).toString().replace('.', ',') + m.getType().getLabel(), offsetY + 40, 28 * x - 8 + offsetX);
 					x++;
 				}
 				offsetY += 150;
