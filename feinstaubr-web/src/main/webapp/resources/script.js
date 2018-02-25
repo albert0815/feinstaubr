@@ -5,8 +5,8 @@
 	var jqXHR;
 	
 	var labels = new Map();
-	labels.set("temperature", " °C");
-	labels.set("humidity", " %");
+	labels.set("temperature", "° C");
+	labels.set("humidity", "%");
 	labels.set("SDS_P1", " PM10 in μg/m³");
 	labels.set("SDS_P2", " PM2.5 in μg/m³");
 	labels.set("pressure", " hPa");
