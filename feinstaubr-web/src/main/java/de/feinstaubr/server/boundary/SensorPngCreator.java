@@ -50,6 +50,7 @@ public class SensorPngCreator extends HttpServlet {
 		try {
 			Font iconFont = Font.createFont(Font.TRUETYPE_FONT, SensorPngCreator.class.getResourceAsStream("/MaterialIcons-Regular.ttf"));
 			iconFont = iconFont.deriveFont(Font.PLAIN, 26);
+			Font iconFontSmall = iconFont.deriveFont(Font.PLAIN, 14);
 			Font writeFont = Font.createFont(Font.TRUETYPE_FONT, SensorPngCreator.class.getResourceAsStream("/LiberationSans-Regular.ttf"));
 			writeFont = writeFont.deriveFont(Font.PLAIN, 18);
 			Font writeFontSmall = writeFont.deriveFont(Font.PLAIN, 10);
@@ -66,19 +67,22 @@ public class SensorPngCreator extends HttpServlet {
 				ig2.drawString("Balkon (" + df.format(balkon.get(0).getDate()) + ")", 155, 10);
 			}
 
-			int offsetY = 0;
-			int offsetX = 15;
+			int offsetX = 0;
+			int offsetY = 15;
 			for (List<SensorMeasurement> list : Arrays.asList(wohnzimmer, balkon)) {
-				int x = 1;
+				int i = 1;
 				for (SensorMeasurement m : list) {
-					String message = new String(Character.toChars(m.getType().getCodePoint()));
+					String icon = new String(Character.toChars(m.getType().getCodePoint()));
 					ig2.setFont(iconFont);
-					ig2.drawString(message, offsetY + 5, 28 * x + offsetX);
+					ig2.drawString(icon, offsetX + 2, 28 * i + offsetY);
+					String trend = new String(Character.toChars(m.getTrend().getCodepoint()));
+					ig2.setFont(iconFontSmall);
+					ig2.drawString(trend, offsetX + 28, 28 * i + offsetY - 7);
 					ig2.setFont(writeFont);
-					ig2.drawString(m.getValue().setScale(1, RoundingMode.HALF_UP).toString().replace('.', ',') + m.getType().getLabel(), offsetY + 40, 28 * x - 8 + offsetX);
-					x++;
+					ig2.drawString(m.getValue().setScale(1, RoundingMode.HALF_UP).toString().replace('.', ',') + m.getType().getLabel(), offsetX + 43, 28 * i - 8 + offsetY);
+					i++;
 				}
-				offsetY += 150;
+				offsetX += 150;
 			}
 
 

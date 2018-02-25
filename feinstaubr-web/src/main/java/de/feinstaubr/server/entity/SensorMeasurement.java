@@ -3,7 +3,6 @@ package de.feinstaubr.server.entity;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -31,6 +30,8 @@ public class SensorMeasurement {
 	@ManyToOne
 	@JoinColumn(name="type")
 	private SensorMeasurementType type;
+	
+	private transient Trend trend;
 	
 	
 	public Date getDate() {
@@ -68,6 +69,13 @@ public class SensorMeasurement {
 	}
 	public void setType(SensorMeasurementType type) {
 		this.type = type;
+	}
+	
+	public Trend getTrend() {
+		return trend;
+	}
+	public void setTrend(Trend trend) {
+		this.trend = trend;
 	}
 	@Override
 	public String toString() {

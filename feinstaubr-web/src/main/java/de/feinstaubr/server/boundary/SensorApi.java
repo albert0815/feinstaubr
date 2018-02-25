@@ -49,6 +49,7 @@ import de.feinstaubr.server.entity.SensorMeasurementType;
 import de.feinstaubr.server.entity.SensorMeasurementType_;
 import de.feinstaubr.server.entity.SensorMeasurement_;
 import de.feinstaubr.server.entity.Sensor_;
+import de.feinstaubr.server.entity.Trend;
 
 @Stateless
 @Path("sensor")
@@ -193,10 +194,49 @@ public class SensorApi {
 
 		TypedQuery<SensorMeasurement> createQuery = em.createQuery(query);
 		List<SensorMeasurement> resultList = createQuery.getResultList();
+		
+		for (SensorMeasurement m : resultList) {
+			calculateTrend(m);
+		}
+		
 		return resultList;
 	}
 
 	
+	private void calculateTrend(SensorMeasurement m) {
+		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+		CriteriaQuery<Number> query = criteriaBuilder.createQuery(Number.class);
+		Root<SensorMeasurement> root = query.from(SensorMeasurement.class);
+		query.select(criteriaBuilder.avg(root.get(SensorMeasurement_.value)));
+		Predicate predicateId = criteriaBuilder.equal(root.get(SensorMeasurement_.sensorId), m.getSensorId());
+		Predicate predicateType = criteriaBuilder.equal(root.get(SensorMeasurement_.type), m.getType());
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(m.getDate());
+		cal.add(Calendar.MINUTE, -30);
+		Predicate predicateLastHalfHour = criteriaBuilder.greaterThan(root.get(SensorMeasurement_.date), cal.getTime());
+		query.where(criteriaBuilder.and(predicateId, predicateLastHalfHour, predicateType));
+		Number avgLastHalfHour = em.createQuery(query).getSingleResult();
+
+		Date end = cal.getTime();
+		cal.add(Calendar.MINUTE, -30);
+		Date start = cal.getTime();
+		
+		Predicate predicateAfterLastHour = criteriaBuilder.greaterThan(root.get(SensorMeasurement_.date), start);
+		Predicate predicateBeforeLastHalfHour = criteriaBuilder.lessThan(root.get(SensorMeasurement_.date), end);
+		query.where(criteriaBuilder.and(predicateId, predicateAfterLastHour, predicateBeforeLastHalfHour, predicateType));
+		Number avgHalfHourBefore = em.createQuery(query).getSingleResult();
+		double diff = avgLastHalfHour.doubleValue() - avgHalfHourBefore.doubleValue();
+		if (Math.abs(diff) < m.getType().getMinDiffBetweenTwoValues().doubleValue()) {
+			m.setTrend(Trend.FLAT);
+		} else {
+			if (diff > 0) {
+				m.setTrend(Trend.UP);
+			} else {
+				m.setTrend(Trend.DOWN);
+			}
+		}
+	}
+
 	@Path("{id}/{period}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
