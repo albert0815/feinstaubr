@@ -212,13 +212,13 @@ public class SensorApi {
 		Predicate predicateType = criteriaBuilder.equal(root.get(SensorMeasurement_.type), m.getType());
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(m.getDate());
-		cal.add(Calendar.MINUTE, -30);
+		cal.add(Calendar.MINUTE, -90);
 		Predicate predicateLastHalfHour = criteriaBuilder.greaterThan(root.get(SensorMeasurement_.date), cal.getTime());
 		query.where(criteriaBuilder.and(predicateId, predicateLastHalfHour, predicateType));
 		Number avgLastHalfHour = em.createQuery(query).getSingleResult();
 
 		Date end = cal.getTime();
-		cal.add(Calendar.MINUTE, -30);
+		cal.add(Calendar.MINUTE, -90);
 		Date start = cal.getTime();
 		
 		Predicate predicateAfterLastHour = criteriaBuilder.greaterThan(root.get(SensorMeasurement_.date), start);
