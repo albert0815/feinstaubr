@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Feinstaubr - MVG</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" />
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+	<script src="components/custom-elements.min.js"></script>
+	<script src="components/shadydom.min.js"></script>
+</head>
+<body class="mdc-typography">
+	<md-menu-component>
+		<span class="mdc-toolbar__title" slot="menu">Feinstaubr</span>
+		<md-loading-component active="true" slot="belowMenu"></md-loading-component>
+	</md-menu-component>
+	
+	<main class="mdc-toolbar-fixed-adjust">
+		<mvg-component></mvg-component>
+	</main>
+	
+
+
+	
+	<script>
+	document.querySelector('mvg-component').addEventListener('loading-done', function (e) {
+		document.querySelector('md-loading-component').setAttribute("active", "false");
+	});
+	</script>
+	
+
+
+	<script src="components/mvg/mvg-component.js"></script>
+	<script src="components/material-design/material-design-components.js"></script>
+</body>
+
+</html>

@@ -2,7 +2,9 @@
 	var lastUpdate;
 	const TIMEOUT=900000;
 	var chartData;
+	var foreCast;
 	var jqXHR;
+	var jqForecastXHR;
 	
 	var labels = new Map();
 	labels.set("temperature", "° C");
@@ -34,6 +36,22 @@
 				lastUpdate = new Date();
 				$("#progressbar").css("display", "none");
 			});
+		
+		if (getPeriod() === "day") {
+			jqForecastXHR = $.getJSON("rest/forecasts/10865")
+			.done(function(data) {
+				foreCast = {};
+				foreCast.temperature = [];
+				foreCast.pressure = [];
+				for (i in data) {
+					foreCast.temperature.push([data[i].forecastDate, data[i].temperature])
+					foreCast.pressure.push([data[i].forecastDate, data[i].pressure])
+				}
+				drawCharts();
+			}).always(function() {
+				jqForecastXHR = undefined;
+			});
+		}
 	}
 
 	function drawCurrentMinMax() {
@@ -104,12 +122,20 @@
 			}
 			var dataTable = new google.visualization.DataTable();
 			dataTable.addColumn('datetime', 'Time');
-			dataTable.addColumn('number', labels.get(sensorType));
+			dataTable.addColumn('number', 'Ist in ' + labels.get(sensorType));
+			dataTable.addColumn('number', 'Vorhersage');
 			var arrayLength = data.length;
 			for (var i = 0; i < arrayLength; i++) {
 				var xAxisDate = new Date(data[i][0]);
 				var yValue = data[i][1];
-				dataTable.addRow([xAxisDate, yValue]);
+				dataTable.addRow([xAxisDate, yValue, null]);
+			}
+			if (foreCast && foreCast[sensorType]) {
+				for (var i = 0; i < foreCast[sensorType].length; i++) {
+					var xAxisDate = new Date(foreCast[sensorType][i][0]);
+					var yValue = foreCast[sensorType][i][1];
+					dataTable.addRow([xAxisDate, null, yValue]);
+				}
 			}
 			var formatDate;
 			if (getPeriod() === "year") {
@@ -135,6 +161,12 @@
 			minDate.setMinutes(0);
 			minDate.setSeconds(0);
 			minDate.setMilliseconds(0);
+			var maxDate = new Date();
+			maxDate.setHours(23);
+			maxDate.setMinutes(59);
+			maxDate.setSeconds(59);
+			maxDate.setMilliseconds(0);
+			
 			
 			var gridCount;
 			if ($(window).width() < 720) {
@@ -172,7 +204,7 @@
 					},
 				    viewWindow: {
 				        min: minDate,
-				        max: new Date()
+				        max: maxDate
 				    },
 			        format: formatString
 				}
@@ -256,3 +288,5 @@
 		
 		loadData();
 	}
+	
+	

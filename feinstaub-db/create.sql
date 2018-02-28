@@ -55,3 +55,11 @@ alter table sensormeasurementvalues add column calculatedValue numeric(19, 2) nu
 
 --version 0.5
 alter table sensormeasurementtype add column codepoint int4 not null default 0;
+
+--version 0.6
+create table mvgstation (stationId int8 not null, name varchar(255), destinationfilter varchar(255), primary key (stationId));
+insert into mvgstation values (1170, 'Silberhornstraße', '.*(Feldmoching|Einkaufszentrum|Olympiazentrum|Sendlinger).*');
+insert into mvgstation values (1190, 'Wettersteinplatz', '.*(Einkaufszentrum|Stiglmaierplatz|Maillingerstraße).*');
+insert into mvgstation values (1146, 'Spixstr', '.*(Freiheit).*');
+insert into mvgstation values (1115, 'Tegernseer Landstraße', '.*(Ostbahnhof|Laim|Max).*');
+
