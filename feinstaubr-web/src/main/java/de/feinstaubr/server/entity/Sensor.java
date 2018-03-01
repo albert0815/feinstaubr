@@ -5,8 +5,14 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+/**
+ * @author PAPEND
+ *
+ */
 @Entity
 public class Sensor {
 	@Id
@@ -16,6 +22,10 @@ public class Sensor {
 	
 	@OneToMany(mappedBy="sensorId", fetch=FetchType.LAZY)
 	private List<SensorMeasurement> measurements;
+	
+	@ManyToOne
+	@JoinColumn(name="location")
+	private SensorLocation location;
 
 	public String getSensorId() {
 		return sensorId;
@@ -29,4 +39,10 @@ public class Sensor {
 	public void setName(String name) {
 		this.name = name;
 	}
+	@Override
+	public String toString() {
+		return "Sensor [sensorId=" + sensorId + ", name=" + name + "]";
+	}
+	
+	
 }

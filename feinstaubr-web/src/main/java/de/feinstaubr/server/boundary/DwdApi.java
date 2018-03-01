@@ -11,28 +11,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 
 import de.feinstaubr.server.entity.DwdForecast;
 import de.feinstaubr.server.entity.DwdWeather;
 
 @Stateless
-@Path("forecasts")
 public class DwdApi {
 	private static final Logger LOGGER = Logger.getLogger(DwdApi.class.getName());
 	
-	@GET
-	@Path("{poi}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public List<DwdForecast> getForecast(@PathParam("poi") String poi) {
+	public List<DwdForecast> getForecasts(String poi) {
 		List<DwdForecast> resultList = new ArrayList<>();
 		try {
 			URL url = new URL("https://opendata.dwd.de/weather/local_forecasts/poi/" + poi + "-MOSMIX.csv");
@@ -43,6 +35,7 @@ public class DwdApi {
 				scanner.nextLine();
 				scanner.nextLine();
 				SimpleDateFormat dateParser = new SimpleDateFormat("dd.MM.yy HH:mm");
+				dateParser.setTimeZone(TimeZone.getTimeZone("UTC"));
 				while (scanner.hasNext()) {
 					String nextLine = scanner.nextLine();
 					try {

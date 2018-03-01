@@ -39,9 +39,6 @@ import javax.ws.rs.core.Response;
 
 import com.goebl.simplify.PointExtractor;
 import com.goebl.simplify.Simplify;
-import com.google.cloud.trace.Trace;
-import com.google.cloud.trace.Tracer;
-import com.google.cloud.trace.core.TraceContext;
 
 import de.feinstaubr.server.entity.Sensor;
 import de.feinstaubr.server.entity.SensorMeasurement;
@@ -82,8 +79,8 @@ public class SensorApi {
 		}
 
 		
-	    Tracer tracer = Trace.getTracer();
-		TraceContext traceContext = tracer.startSpan("save");
+//	    Tracer tracer = Trace.getTracer();
+//		TraceContext traceContext = tracer.startSpan("save");
 		
 		
 		Date now = new Date();
@@ -132,13 +129,29 @@ public class SensorApi {
 				}
 				BigDecimal calculatedPpm = new BigDecimal(ppm);
 				measurement.setCalculatedValue(calculatedPpm);
+			} else if ("pressure".equals(measurementType.getType())) {
+//				Luftdruck auf Meereshöhe = Barometeranzeige / (1-Temperaturgradient*Höhe/Temperatur + Temperaturgradient * Höhe in Kelvin)^(0,03416/Temperaturgradient)
+				BigDecimal temperatureMeasurement = getLatestOutsideTemperature(sensor);
+				measurement.setCalculatedValue(PressureCalculator.calculatePressure(measurement.getValue(), temperatureMeasurement, 519));//FIXME sensor.getHeight()
 			}
 			LOGGER.info("saving new measurement " + measurement);
 			em.persist(measurement);
 		}
-		tracer.endSpan(traceContext);
+//		tracer.endSpan(traceContext);
 	}
 	
+	private BigDecimal getLatestOutsideTemperature(Sensor sensor) {
+		String sensorIdOutsideSensor = "7620363";//something like sensor.getLocation().getMainOutsideSensor()
+		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+		CriteriaQuery<SensorMeasurement> query = criteriaBuilder.createQuery(SensorMeasurement.class);
+		Root<SensorMeasurement> root = query.from(SensorMeasurement.class);
+		query.select(root);
+		Predicate predicateId = criteriaBuilder.equal(root.get(SensorMeasurement_.sensorId).get(Sensor_.sensorId), sensorIdOutsideSensor);
+		Predicate predicateType = criteriaBuilder.equal(root.get(SensorMeasurement_.type).get(SensorMeasurementType_.type), "temperature");
+		query.where(criteriaBuilder.and(predicateId, predicateType)).orderBy(criteriaBuilder.desc(root.get(SensorMeasurement_.date)));
+		return em.createQuery(query).setMaxResults(1).getSingleResult().getValue();
+	}
+
 	@Path("{id}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -225,14 +238,18 @@ public class SensorApi {
 		Predicate predicateBeforeLastHalfHour = criteriaBuilder.lessThan(root.get(SensorMeasurement_.date), end);
 		query.where(criteriaBuilder.and(predicateId, predicateAfterLastHour, predicateBeforeLastHalfHour, predicateType));
 		Number avgHalfHourBefore = em.createQuery(query).getSingleResult();
-		double diff = avgLastHalfHour.doubleValue() - avgHalfHourBefore.doubleValue();
-		if (Math.abs(diff) < m.getType().getMinDiffBetweenTwoValues().doubleValue()) {
+		if (avgHalfHourBefore == null) {
 			m.setTrend(Trend.FLAT);
 		} else {
-			if (diff > 0) {
-				m.setTrend(Trend.UP);
+			double diff = avgLastHalfHour.doubleValue() - avgHalfHourBefore.doubleValue();
+			if (Math.abs(diff) < m.getType().getMinDiffBetweenTwoValues().doubleValue()) {
+				m.setTrend(Trend.FLAT);
 			} else {
-				m.setTrend(Trend.DOWN);
+				if (diff > 0) {
+					m.setTrend(Trend.UP);
+				} else {
+					m.setTrend(Trend.DOWN);
+				}
 			}
 		}
 	}
@@ -260,13 +277,13 @@ public class SensorApi {
 		Predicate predicatePeriod = criteriaBuilder.greaterThan(measurementValuesJoin.get(SensorMeasurement_.date), getPeriodStartDate(period).getTime());
 		query.where(criteriaBuilder.and(predicateId, predicatePeriod));
 		
-	    Tracer tracer = Trace.getTracer();
-		TraceContext traceContext = tracer.startSpan("db-get-chart-entries");
+//	    Tracer tracer = Trace.getTracer();
+//		TraceContext traceContext = tracer.startSpan("db-get-chart-entries");
 		long start;
 		start = System.currentTimeMillis();
 		List<SensorMeasurementType> resultList = em.createQuery(query).setHint("javax.persistence.fetchgraph", graph).getResultList();
 		LOGGER.finest("duration for db: " + (System.currentTimeMillis() - start));
-		tracer.endSpan(traceContext);
+//		tracer.endSpan(traceContext);
 		if (resultList.isEmpty()) {
 			return Response.ok().build();
 		}

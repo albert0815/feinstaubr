@@ -62,4 +62,29 @@ insert into mvgstation values (1170, 'Silberhornstraße', '.*(Feldmoching|Einkau
 insert into mvgstation values (1190, 'Wettersteinplatz', '.*(Einkaufszentrum|Stiglmaierplatz|Maillingerstraße).*');
 insert into mvgstation values (1146, 'Spixstr', '.*(Freiheit).*');
 insert into mvgstation values (1115, 'Tegernseer Landstraße', '.*(Ostbahnhof|Laim|Max).*');
+GRANT SELECT ON mvgstation TO proxyuser;    
 
+
+--version 0.7
+create table sensorlocation(id int8 not null, locationName varchar(255), primary key (id));
+insert into sensorlocation values (nextval('hibernate_sequence'), 'München');
+alter table sensor add column location int8 not null default 0;
+update sensor set location = currval('hibernate_sequence');
+alter table sensor add constraint fdkjdhrLIUHds327797 foreign key (location) references sensorlocation;
+alter table sensorlocation add column poiId varchar(255) null;
+update sensorlocation set poiId='10865';
+create table dwdforecast(
+	id int8 not null,
+	location int8 not null,
+    forecastDate timestamp without time zone not null,
+    lastUpdate timestamp without time zone not null,
+	temperature numeric(19, 2) null,
+	pressure numeric(19, 2) null,
+	weather numeric(19, 2) null,
+	cloudCoverTotal numeric(19, 2) null,
+	chanceOfRain numeric(19, 2) null,
+	meanWindDirection numeric(19, 2) null,
+	meanWindSpeed numeric(19, 2) null,
+	primary key (id)
+);
+alter table dwdforecast add constraint fdwkuh33uhiufdshfudsgfuz foreign key (location) references sensorlocation;

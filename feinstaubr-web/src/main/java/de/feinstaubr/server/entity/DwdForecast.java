@@ -3,8 +3,25 @@ package de.feinstaubr.server.entity;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+
+@Entity
 public class DwdForecast {
+	@Id
+	@GeneratedValue(strategy=GenerationType.AUTO)
+	private Long id;
+	
+	@OneToOne
+	@JoinColumn(name = "location")
+	private SensorLocation location;
+	
 	private Date forecastDate;
+	private Date lastUpdate;
 	private BigDecimal temperature;
 	private BigDecimal pressure;
 	private DwdWeather weather;
@@ -59,6 +76,24 @@ public class DwdForecast {
 	}
 	public void setMeanWindSpeed(BigDecimal meanWindSpeed) {
 		this.meanWindSpeed = meanWindSpeed;
+	}
+	public SensorLocation getLocation() {
+		return location;
+	}
+	public void setLocation(SensorLocation location) {
+		this.location = location;
+	}
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
 	}
 	
 }

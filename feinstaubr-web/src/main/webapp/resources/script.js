@@ -38,7 +38,8 @@
 			});
 		
 		if (getPeriod() === "day") {
-			jqForecastXHR = $.getJSON("rest/forecasts/10865")
+			// based on https://www.dwd.de/DE/leistungen/met_verfahren_mosmix/mosmix_stationskatalog.pdf?__blob=publicationFile&v=4
+			jqForecastXHR = $.getJSON("rest/forecast/10865/1")
 			.done(function(data) {
 				foreCast = {};
 				foreCast.temperature = [];
@@ -189,7 +190,7 @@
 			            height: "80%",
 			            width: "80%"
 			        },
-			        focusTarget : 'category',
+//			        focusTarget : 'category',
 				legend : {
 					position : 'none'
 				},
