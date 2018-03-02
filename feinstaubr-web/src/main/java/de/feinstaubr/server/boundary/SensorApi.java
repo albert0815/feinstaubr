@@ -65,8 +65,6 @@ public class SensorApi {
 	@PersistenceContext
 	private EntityManager em;
 	
-	@Inject
-	private UserApi user;
 	
 	@Path("/save")
 	@POST
