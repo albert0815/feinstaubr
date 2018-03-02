@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -64,6 +65,8 @@ public class SensorApi {
 	@PersistenceContext
 	private EntityManager em;
 	
+	@Inject
+	private UserApi user;
 	
 	@Path("/save")
 	@POST
@@ -132,7 +135,7 @@ public class SensorApi {
 			} else if ("pressure".equals(measurementType.getType())) {
 //				Luftdruck auf Meereshöhe = Barometeranzeige / (1-Temperaturgradient*Höhe/Temperatur + Temperaturgradient * Höhe in Kelvin)^(0,03416/Temperaturgradient)
 				BigDecimal temperatureMeasurement = getLatestOutsideTemperature(sensor);
-				measurement.setCalculatedValue(PressureCalculator.calculatePressure(measurement.getValue(), temperatureMeasurement, 519));//FIXME sensor.getHeight()
+				measurement.setCalculatedValue(PressureCalculator.calculatePressure(measurement.getValue(), temperatureMeasurement, 545));//FIXME sensor.getHeight()
 			}
 			LOGGER.info("saving new measurement " + measurement);
 			em.persist(measurement);
