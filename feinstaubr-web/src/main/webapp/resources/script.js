@@ -117,6 +117,9 @@
 	    return decodeURIComponent(results[2].replace(/\+/g, " "));
 	}
 	function drawCharts() {
+		if (!chartData || !chartData.chart) {
+			return;
+		}
 		$.each(chartData.charts, function (sensorType, data) {
 			if (!labels.get(sensorType)) {
 				return;

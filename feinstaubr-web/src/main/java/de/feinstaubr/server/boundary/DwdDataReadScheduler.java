@@ -2,6 +2,7 @@ package de.feinstaubr.server.boundary;
 
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Schedule;
@@ -23,6 +24,8 @@ import de.feinstaubr.server.entity.SensorLocation;
 @Singleton
 @Startup
 public class DwdDataReadScheduler {
+	private static final Logger LOGGER = Logger.getLogger(DwdDataReadScheduler.class.getName());
+	
 	@PersistenceContext
 	private EntityManager em;
 	
@@ -36,6 +39,7 @@ public class DwdDataReadScheduler {
 	
 	@Schedule(hour="*", persistent=false)
 	public void updateDwdData() {
+		LOGGER.info("updating forecast data");
 		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 		CriteriaQuery<SensorLocation> sensorLocationQuery = criteriaBuilder.createQuery(SensorLocation.class);
 		Root<SensorLocation> sensorLocationRoot = sensorLocationQuery.from(SensorLocation.class);
