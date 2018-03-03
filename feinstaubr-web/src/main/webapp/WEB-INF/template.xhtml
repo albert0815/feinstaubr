@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+
+<head>
+	<title>Feinstaubr</title>
+	<!-- from https://material.io/components -->
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<script type="text/javascript"
+		src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<link rel="stylesheet"
+		href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" />
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+	      rel="stylesheet" />
+	<style>
+	.chart{
+		height:15rem;
+	}
+	.hidden{
+		display:none;
+	}
+	</style>
+</head>
+
+<body class="mdc-typography">
+
+
+	<header class="mdc-toolbar mdc-toolbar--fixed">
+		  <div class="mdc-toolbar__row">
+		    <section class="mdc-toolbar__section mdc-toolbar__section--align-start">
+		    	<a 
+		    		href="#" 
+		    		class="material-icons mdc-toolbar__menu-icon menu" 
+		    		data-mdc-auto-init="MDCRipple">menu</a>
+		      <span class="mdc-toolbar__title">Feinstaubr</span>
+		    </section>
+		  </div>
+		  <div id="progressbar" role="progressbar" class="mdc-linear-progress mdc-linear-progress--indeterminate hidden">
+			  <div class="mdc-linear-progress__buffering-dots"></div>
+			  <div class="mdc-linear-progress__buffer"></div>
+			  <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
+			    <span class="mdc-linear-progress__bar-inner"></span>
+			  </div>
+			  <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
+			    <span class="mdc-linear-progress__bar-inner"></span>
+			  </div>
+		</div>				
+	   
+	</header>
+	<aside id="main-menu" class="mdc-drawer mdc-drawer--temporary mdc-typography">
+	  <nav class="mdc-drawer__drawer">
+	  	<div class="mdc-drawer__toolbar-spacer mdc-theme--primary-bg mdc-theme--text-primary-on-primary">Feinstaubr Navigation</div>
+	    <nav class="mdc-drawer__content mdc-list">
+	      <a class="mdc-list-item" href="/sensor.xhtml?sensorId=30:ae:a4:22:ca:f4">
+	      	<i class="material-icons mdc-list-item__graphic" aria-hidden="true">home</i>Innensensor
+	      </a>
+	      <a class="mdc-list-item" href="/sensor.xhtml?sensorId=7620363">
+	      	<i class="material-icons mdc-list-item__graphic" aria-hidden="true">wb_sunny</i>Außensensor
+	      </a>
+	      <a class="mdc-list-item" href="/forecast.xhtml">
+	        <i class="material-icons mdc-list-item__graphic" aria-hidden="true">star</i>Vorhersage
+	      </a>
+	      <a class="mdc-list-item" href="/mvg.html">
+	        <i class="material-icons mdc-list-item__graphic" aria-hidden="true">directions_bus</i>Abfahrten
+	      </a>
+	    </nav>
+	  </nav>
+	</aside>		
+	<main class="mdc-toolbar-fixed-adjust">
+		<ui:insert name="content">
+		</ui:insert>
+		<div class="mdc-snackbar"
+		     aria-live="assertive"
+		     aria-atomic="true"
+		     aria-hidden="true">
+		  <div class="mdc-snackbar__text">Ein Fehler ist aufgetreten</div>
+		  <div class="mdc-snackbar__action-wrapper">
+		    <button type="button" class="mdc-snackbar__action-button"></button>
+		  </div>
+		</div>
+		
+		<p class="mdc-typography--body1" style="text-align:right">Version: #{indexViewController.version}</p>
+	</main>
+
+	<script
+		src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+
+	<script>
+		$(function() {
+		    var drawer = new mdc.drawer.MDCTemporaryDrawer(document.querySelector('.mdc-drawer--temporary'));
+		    document.querySelector('.menu').addEventListener('click', () => {console.log("clicked");drawer.open = true;});
+		});
+	</script>
+	<ui:insert name="footer">
+	</ui:insert>
+</body>
+</html>

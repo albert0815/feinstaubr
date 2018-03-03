@@ -117,7 +117,7 @@
 	    return decodeURIComponent(results[2].replace(/\+/g, " "));
 	}
 	function drawCharts() {
-		if (!chartData || !chartData.chart) {
+		if (!chartData || !chartData.charts) {
 			return;
 		}
 		$.each(chartData.charts, function (sensorType, data) {

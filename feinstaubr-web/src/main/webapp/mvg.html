@@ -10,9 +10,34 @@
 </head>
 <body class="mdc-typography">
 	<md-menu-component>
+    	<a slot="menu"
+		    		href="#" 
+		    		class="material-icons mdc-toolbar__menu-icon menu" 
+		    		data-mdc-auto-init="MDCRipple">menu</a>
+	
 		<span class="mdc-toolbar__title" slot="menu">Feinstaubr</span>
+		<md-navigation></md-navigation>
 		<md-loading-component active="true" slot="belowMenu"></md-loading-component>
 	</md-menu-component>
+	<aside id="main-menu" class="mdc-drawer mdc-drawer--temporary mdc-typography">
+	  <nav class="mdc-drawer__drawer">
+	  	<div class="mdc-drawer__toolbar-spacer mdc-theme--primary-bg mdc-theme--text-primary-on-primary">Feinstaubr Navigation</div>
+	    <nav class="mdc-drawer__content mdc-list">
+	      <a class="mdc-list-item" href="/sensor.xhtml?sensorId=30:ae:a4:22:ca:f4">
+	      	<i class="material-icons mdc-list-item__graphic" aria-hidden="true">home</i>Wohnzimmersensor
+	      </a>
+	      <a class="mdc-list-item" href="/sensor.xhtml?sensorId=7620363">
+	      	<i class="material-icons mdc-list-item__graphic" aria-hidden="true">wb_sunny</i>Balkonsensor
+	      </a>
+	      <a class="mdc-list-item" href="/forecast.xhtml">
+	        <i class="material-icons mdc-list-item__graphic" aria-hidden="true">star</i>Vorhersage
+	      </a>
+	      <a class="mdc-list-item" href="/mvg.html">
+	        <i class="material-icons mdc-list-item__graphic" aria-hidden="true">directions_bus</i>Abfahrten
+	      </a>
+	    </nav>
+	  </nav>
+	</aside>
 	
 	<main class="mdc-toolbar-fixed-adjust">
 		<mvg-component></mvg-component>
@@ -21,16 +46,26 @@
 
 
 	
+	<script
+		src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
 	<script>
 	document.querySelector('mvg-component').addEventListener('loading-done', function (e) {
 		document.querySelector('md-loading-component').setAttribute("active", "false");
 	});
+    var drawer = new mdc.drawer.MDCTemporaryDrawer(document.querySelector('.mdc-drawer--temporary'));
+    document.querySelector('.menu').addEventListener('click', () => {console.log("clicked");drawer.open = true;});
+	
+	
 	</script>
 	
 
 
 	<script src="components/mvg/mvg-component.js"></script>
 	<script src="components/material-design/material-design-components.js"></script>
+	
+	
+
+	
 </body>
 
 </html>

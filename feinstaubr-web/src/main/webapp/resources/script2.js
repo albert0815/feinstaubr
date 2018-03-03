@@ -26,10 +26,10 @@ function drawChart() {
 		var yValue = chartData[i].temperature;
 		dataTable.addRow([xAxisDate, yValue]);
 	}
-	var formatDate = new google.visualization.DateFormat({pattern: 'dd.MM.yyyy HH:mm'});
+	var formatDate = new google.visualization.DateFormat({pattern: 'EE HH:mm'});
 	formatDate.format(dataTable, 0);
 	var chart = new google.visualization.LineChart(document.getElementById("forecastchart"));
-	var formatString = "dd.MM. HH:mm";
+	var formatString = "EE HH:mm";
 	var minDate = new Date();
 	minDate.setHours(0);
 	minDate.setMinutes(0);
@@ -41,7 +41,14 @@ function drawChart() {
 	maxDate.setSeconds(59);
 	maxDate.setMilliseconds(0);
 	minDate.setDate(minDate.getDate() + 3);
-	
+	var gridCount;
+	if ($(window).width() < 720) {
+		gridCount = 5;
+	}
+	else {
+		gridCount = 8;
+	}
+
 	var options = {
 	        width: '100%',
 	        height: '100%',
@@ -51,7 +58,7 @@ function drawChart() {
 	            height: "80%",
 	            width: "80%"
 	        },
-//	        focusTarget : 'category',
+	        focusTarget : 'category',
 		legend : {
 			position : 'none'
 		},
@@ -62,14 +69,18 @@ function drawChart() {
 		},
 		hAxis : {
 			gridlines : {
-//				count : gridCount,
+				count : gridCount,
 			},
 		    viewWindow: {
 		        min: minDate,
 		        max: maxDate
 		    },
 	        format: formatString
-		}
+		},
+        series: {
+            0: { color: 'red' },
+        }
+
 	};
 
 	chart.draw(dataTable, options);

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core"
+			xmlns:ui="http://java.sun.com/jsf/facelets">
+
+<f:metadata>
+	<f:viewParam name="sensorId" value="#{indexViewController.sensorId}" />
+	<f:event type="preRenderView" listener="#{indexViewController.init}" />
+</f:metadata>
+
+
+
+<ui:composition template="WEB-INF/template.xhtml">
+	<ui:define name="content">
+
+
+		
+		<h:panelGroup rendered="#{!empty indexViewController.sensorId}">
+		<div class="mdc-layout-grid">
+			<div class="mdc-layout-grid__inner">
+				<div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-3-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile">
+					<div class="mdc-card">
+		          <div class="demo-card__primary" style="padding-left:1rem">
+		            <h2 class="demo-card__title mdc-typography--title">Aktuell</h2>
+		          </div>
+					
+					<ul class="mdc-list mdc-list--dense" id="current">
+						<li class="mdc-list-item">
+							<span class="mdc-list-item__graphic">
+								<i class="material-icons" aria-hidden="true">access_time</i>
+							</span>
+							<span class="mdc-list-item__text val_date">
+								<h:outputText value="#{indexViewController.currentSensorData[0].date}">
+									<f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="Europe/Berlin" />
+								</h:outputText>
+							</span>
+						</li>
+						
+						<ui:repeat value="#{indexViewController.currentSensorData}" var="data">
+							<li class="mdc-list-item">
+								<span class="mdc-list-item__graphic">
+									<i class="material-icons" aria-hidden="true"><h:outputText value="#{data.type.logo}" /></i>
+								</span>
+								<span class="mdc-list-item__text val_#{data.type.type}">
+									<h:outputText value="#{data.value}">
+										<f:convertNumber locale="de_DE" />
+									</h:outputText> <h:outputText value="#{data.type.label}" />
+								</span>
+								<i class=" mdc-list-item__meta material-icons" aria-hidden="true"><h:outputText value="#{data.trend.logo}" /></i>
+							</li>
+						</ui:repeat>
+					</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+			<nav id="basic-tab-bar" class="mdc-tab-bar" data-mdc-auto-init="MDCTabBar">
+			  <a class="mdc-tab" href="#day">Tag</a>
+			  <a class="mdc-tab" href="#week">Woche</a>
+			  <a class="mdc-tab" href="#month">Monat</a>
+			  <a class="mdc-tab" href="#year">Jahr</a>
+			  <span class="mdc-tab-bar__indicator"></span>
+			</nav>
+		<div class="mdc-layout-grid">
+			<div class="mdc-layout-grid__inner">
+				<ui:repeat value="#{indexViewController.sensorDataTypes}" var="data">
+					<div class="mdc-layout-grid__cell  mdc-layout-grid__cell--span-6-desktop mdc-layout-grid__cell--span-4-tablet mdc-layout-grid__cell--span-4-mobile hidden" id="#{data.type}">
+						<div class="mdc-card demo-card">
+				          <div class="demo-card__primary" style="padding-left:1rem">
+				            <h2 class="demo-card__title mdc-typography--title">#{data.title}</h2>
+				          </div>
+				          <div class="mdc-card__media mdc-card__media">
+				          	<div id="chart_#{data.type}" class="chart"></div>
+				          </div>
+				          <div class="demo-card__secondary mdc-typography--body1">
+							<ul class="mdc-list mdc-list--dense">
+								<li class="mdc-list-item">
+									<span class="mdc-list-item__graphic">
+										<i class="material-icons" aria-hidden="true">arrow_upward</i>
+									</span>
+									<span class="mdc-list-item__text val_max">
+									</span>
+								</li>
+								<li class="mdc-list-item">
+									<span class="mdc-list-item__graphic">
+										<i class="material-icons" aria-hidden="true">arrow_forward</i>
+									</span>
+									<span class="mdc-list-item__text val_avg"></span>
+								</li>
+								<li class="mdc-list-item">
+									<span class="mdc-list-item__graphic">
+										<i class="material-icons" aria-hidden="true">arrow_downward</i>
+									</span>
+									<span class="mdc-list-item__text val_min"></span>
+								</li>
+							</ul>
+	
+				          </div>
+				        </div>
+				       </div>
+				</ui:repeat>
+			</div>
+		</div>
+		</h:panelGroup><!-- main content -->
+
+
+	</ui:define>
+	
+	
+	<ui:define name="footer">
+		<script type="text/javascript"
+		src="https://www.gstatic.com/charts/loader.js"></script>
+		<script type="text/javascript" src="resources/script.js"/>
+		<script>
+		$(function() {
+			$("#progressbar").css("display", "block");
+
+			var visProp = getHiddenProp();
+			if (visProp) {
+			  var evtname = visProp.replace(/[H|h]idden/,'') + 'visibilitychange';
+			  document.addEventListener(evtname, visChange);
+			}
+			google.charts.load('current', {
+				'packages' : [ 'corechart' ]
+			});
+		
+			google.charts.setOnLoadCallback(loadData);
+			updateActiveTab();
+			window.mdc.autoInit();
+		
+	        var drawer = new mdc.drawer.MDCTemporaryDrawer(document.querySelector('.mdc-drawer--temporary'));
+	        document.querySelector('.menu').addEventListener('click', () => {console.log("clicked");drawer.open = true;});
+		});
+		</script>
+	</ui:define>
+</ui:composition>
+
+
+
+
+	
+</html>
