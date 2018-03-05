@@ -47,7 +47,7 @@ public class MvgApi {
 
 			@Override
 			public int compare(MvgStation o1, MvgStation o2) {
-				return (int) (o1.getDistanceTo(latitude, longitude) - o2.getDistanceTo(latitude, longitude)); 
+				return (int) (o1.getDistanceTo(latitude, longitude) * 1000 - o2.getDistanceTo(latitude, longitude) * 1000); 
 			}
 		});
 		return stations;
