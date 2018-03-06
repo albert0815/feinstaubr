@@ -30,6 +30,25 @@ public class ForecastApi {
 	private EntityManager em;
 	
 	@GET
+	@Path("{poi}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getNextForecasts(@PathParam("poi") String poi) {
+		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+		CriteriaQuery<DwdForecast> query = criteriaBuilder.createQuery(DwdForecast.class);
+		Root<DwdForecast> root = query.from(DwdForecast.class);
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Predicate dateStartPredicate = criteriaBuilder.greaterThanOrEqualTo(root.get(DwdForecast_.forecastDate), cal.getTime());
+		query.where(criteriaBuilder.and(dateStartPredicate));
+		query.orderBy(criteriaBuilder.asc(root.get(DwdForecast_.forecastDate)));
+		DwdForecast result = em.createQuery(query).setMaxResults(1).getSingleResult();
+		return Response.ok(mapForecastToJson(result).build()).build(); 
+	}
+	
+	@GET
 	@Path("{poi}/{period}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getForecasts(@PathParam("poi") String poi, @PathParam("period")Integer daysToForecast) {
@@ -50,13 +69,19 @@ public class ForecastApi {
 		List<DwdForecast> result = em.createQuery(query).getResultList();
 		JsonArrayBuilder jsonArray = Json.createArrayBuilder();
 		for (DwdForecast forecast : result) {
-			JsonObjectBuilder jsonForecast = Json.createObjectBuilder();
-			jsonForecast.add("forecastDate", forecast.getForecastDate().getTime());
-			jsonForecast.add("temperature", forecast.getTemperature());
-			jsonForecast.add("pressure", forecast.getPressure());
-			jsonArray.add(jsonForecast);
+			jsonArray.add(mapForecastToJson(forecast));
 		}
 		return Response.ok(jsonArray.build()).build();
+	}
+
+	private JsonObjectBuilder mapForecastToJson(DwdForecast forecast) {
+		JsonObjectBuilder jsonForecast = Json.createObjectBuilder();
+		jsonForecast.add("forecastDate", forecast.getForecastDate().getTime());
+		jsonForecast.add("temperature", forecast.getTemperature());
+		jsonForecast.add("pressure", forecast.getPressure());
+		jsonForecast.add("weather", forecast.getWeather().getId());
+		jsonForecast.add("chanceOfRain", forecast.getChanceOfRain());
+		return jsonForecast;
 	}
 
 }

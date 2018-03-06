@@ -1,6 +1,7 @@
 package de.feinstaubr.server.boundary;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -73,6 +74,9 @@ public class MvgApi {
 			JsonArray mvgDepartures = (JsonArray) o.get("departures");
 			List<MvgDeparture> liveDepartureList = new ArrayList<>();
 			Pattern destinationPattern = Pattern.compile(station.getDestinationFilter());
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.MINUTE, 30);
+			Date nowPlusHalfHour = cal.getTime();
 			for (JsonValue jsonValue : mvgDepartures) {
 				if (jsonValue instanceof JsonObject) {
 					JsonObject jsonDeparture = (JsonObject) jsonValue;
@@ -80,8 +84,12 @@ public class MvgApi {
 					if (!destinationPattern.matcher(destination).matches()) {
 						continue;
 					}
+					Date departureTime = new Date(jsonDeparture.getJsonNumber("departureTime").longValue());
+					if (departureTime.after(nowPlusHalfHour)) {
+						continue;
+					}
 					MvgDeparture departure = new MvgDeparture();
-					departure.setDepartureTime(new Date(jsonDeparture.getJsonNumber("departureTime").longValue()));
+					departure.setDepartureTime(departureTime);
 					departure.setDestination(destination);
 					departure.setLine(jsonDeparture.getString("label"));
 					departure.setProduct(MvgProduct.getEnum(jsonDeparture.getString("product")));
@@ -90,7 +98,9 @@ public class MvgApi {
 					LOGGER.severe("unexpected format of MVG api, received: " + jsonValue);
 				}
 			}
-			station.setDepartures(liveDepartureList);
+			if (!liveDepartureList.isEmpty()) {
+				station.setDepartures(liveDepartureList);
+			}
 		}
 		return stations;
 	}

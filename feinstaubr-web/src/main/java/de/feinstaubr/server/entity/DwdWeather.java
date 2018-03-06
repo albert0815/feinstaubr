@@ -55,6 +55,7 @@ public enum DwdWeather {
         return null;
 	}
 	
-	
-	;
+	public String getId() {
+		return id;
+	}
 }
