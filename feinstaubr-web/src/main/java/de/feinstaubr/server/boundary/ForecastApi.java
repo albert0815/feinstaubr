@@ -79,7 +79,9 @@ public class ForecastApi {
 		jsonForecast.add("forecastDate", forecast.getForecastDate().getTime());
 		jsonForecast.add("temperature", forecast.getTemperature());
 		jsonForecast.add("pressure", forecast.getPressure());
-		jsonForecast.add("weather", forecast.getWeather().getId());
+		if (forecast.getWeather() != null) {
+			jsonForecast.add("weather", forecast.getWeather().getId());
+		}
 		jsonForecast.add("chanceOfRain", forecast.getChanceOfRain());
 		return jsonForecast;
 	}

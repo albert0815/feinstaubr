@@ -36,7 +36,9 @@ $.getJSON("rest/forecast/10865")
 		case "30": icon = "wi-storm-showers"; break;
 		case "31": icon = "wi-strong-wind"; break;
 		}
-		$("#icon").addClass(icon);
+		if (icon) {
+			$("#icon").addClass(icon);
+		}
 		var d = new Date(data.forecastDate);
 		$("#forecast").html(pad(d.getHours()) + ":" + pad(d.getMinutes()) + " Uhr: " + data.temperature + "° C, " + data.chanceOfRain + "% Regenwahrscheinlichkeit");
 	}).fail(function(jqXHR, status, error) {
