@@ -40,7 +40,10 @@ $.getJSON("rest/forecast/10865")
 			$("#icon").addClass(icon);
 		}
 		var d = new Date(data.forecastDate);
-		$("#forecast").html(pad(d.getHours()) + ":" + pad(d.getMinutes()) + " Uhr: " + data.temperature + "° C, " + data.chanceOfRain + "% Regenwahrscheinlichkeit");
+		$("#forecast_time").html(pad(d.getHours()) + ":" + pad(d.getMinutes()) + " Uhr");
+		$("#forecast_temp").html(data.temperature.toLocaleString() + "° C");
+		$("#forecast_rain_probability").html(data.chanceOfRain.toLocaleString() + "% Regenwahrscheinlichkeit");
+		$("#forecast_clouds").html((data.cloudCover/8*100).toLocaleString() + "% Bewölkung");
 	}).fail(function(jqXHR, status, error) {
 		if (jqXHR.statusText !== "abort") {
 			$(".mdc-snackbar__text").html("Ein Fehler ist aufgetreten - " + error);

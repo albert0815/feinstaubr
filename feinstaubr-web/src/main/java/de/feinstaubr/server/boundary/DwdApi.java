@@ -49,7 +49,11 @@ public class DwdApi {
 						forecast.setCloudCoverTotal(new BigDecimal(forecastValues[26].trim().replace(',', '.')));
 						forecast.setMeanWindDirection(new BigDecimal(forecastValues[8].trim().replace(',', '.')));
 						forecast.setMeanWindSpeed(new BigDecimal(forecastValues[9].trim().replace(',', '.')));
-						forecast.setWeather(DwdWeather.getEnum(forecastValues[23]));
+						DwdWeather weatherEnum = DwdWeather.getEnum(forecastValues[23]);
+						if (weatherEnum == null) {
+							LOGGER.warning("unknown weather " + forecastValues[23]);
+						}
+						forecast.setWeather(weatherEnum);
 						resultList.add(forecast);
 					} catch (RuntimeException | ParseException e) {
 						LOGGER.warning("unable to parse forecast csv value '" + nextLine + "' due to " + e.getMessage());

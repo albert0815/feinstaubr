@@ -37,10 +37,6 @@ public class ForecastApi {
 		CriteriaQuery<DwdForecast> query = criteriaBuilder.createQuery(DwdForecast.class);
 		Root<DwdForecast> root = query.from(DwdForecast.class);
 		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
 		Predicate dateStartPredicate = criteriaBuilder.greaterThanOrEqualTo(root.get(DwdForecast_.forecastDate), cal.getTime());
 		query.where(criteriaBuilder.and(dateStartPredicate));
 		query.orderBy(criteriaBuilder.asc(root.get(DwdForecast_.forecastDate)));
@@ -83,6 +79,7 @@ public class ForecastApi {
 			jsonForecast.add("weather", forecast.getWeather().getId());
 		}
 		jsonForecast.add("chanceOfRain", forecast.getChanceOfRain());
+		jsonForecast.add("cloudCover", forecast.getCloudCoverTotal());
 		return jsonForecast;
 	}
 
