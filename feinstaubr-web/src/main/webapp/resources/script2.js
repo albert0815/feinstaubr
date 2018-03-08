@@ -19,28 +19,26 @@ function loadData() {
 function drawChart() {
 	var dataTable = new google.visualization.DataTable();
 	dataTable.addColumn('datetime', 'Zeit');
+//	dataTable.addColumn({type: 'string', role: 'annotation'});
 	dataTable.addColumn('number', 'Vorhersage');
 	var arrayLength = chartData.length;
 	for (var i = 0; i < arrayLength; i++) {
 		var xAxisDate = new Date(chartData[i].forecastDate);
 		var yValue = chartData[i].temperature;
-		dataTable.addRow([xAxisDate, yValue]);
+		dataTable.addRow([xAxisDate, /*null, */yValue]);
 	}
+//	dataTable.addRow([new Date(), "Jetzt", null]);
 	var formatDate = new google.visualization.DateFormat({pattern: 'EE HH:mm'});
 	formatDate.format(dataTable, 0);
 	var chart = new google.visualization.LineChart(document.getElementById("forecastchart"));
 	var formatString = "EE HH:mm";
 	var minDate = new Date();
-	minDate.setHours(0);
-	minDate.setMinutes(0);
-	minDate.setSeconds(0);
-	minDate.setMilliseconds(0);
 	var maxDate = new Date();
+	maxDate.setDate(minDate.getDate() + 2);
 	maxDate.setHours(23);
 	maxDate.setMinutes(59);
 	maxDate.setSeconds(59);
 	maxDate.setMilliseconds(0);
-	minDate.setDate(minDate.getDate() + 3);
 	var gridCount;
 	if ($(window).width() < 720) {
 		gridCount = 5;
@@ -78,7 +76,13 @@ function drawChart() {
 	        format: formatString
 		},
         series: {
-            0: { color: 'red' },
+            0: { color: 'red' }
+        },
+        annotations: {
+            stem: {
+                color: 'green'
+              },
+            style: 'line'
         }
 
 	};
