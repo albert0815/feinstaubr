@@ -36,6 +36,7 @@ public class DwdApi {
 				scanner.nextLine();
 				SimpleDateFormat dateParser = new SimpleDateFormat("dd.MM.yy HH:mm");
 				dateParser.setTimeZone(TimeZone.getTimeZone("UTC"));
+				DwdWeather previousWeather = DwdWeather.HEITER;//Default weather, sometimes dwd doesnt provide anything
 				while (scanner.hasNext()) {
 					String nextLine = scanner.nextLine();
 					try {
@@ -51,7 +52,10 @@ public class DwdApi {
 						forecast.setMeanWindSpeed(new BigDecimal(forecastValues[9].trim().replace(',', '.')));
 						DwdWeather weatherEnum = DwdWeather.getEnum(forecastValues[23]);
 						if (weatherEnum == null) {
-							LOGGER.warning("unknown weather " + forecastValues[23]);
+							LOGGER.warning("unknown weather " + forecastValues[23] + " using previous value " + previousWeather);
+							weatherEnum = previousWeather;
+						} else {
+							previousWeather = weatherEnum;
 						}
 						forecast.setWeather(weatherEnum);
 						resultList.add(forecast);
