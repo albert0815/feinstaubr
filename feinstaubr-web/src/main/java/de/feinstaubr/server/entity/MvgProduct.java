@@ -13,10 +13,10 @@ public enum MvgProduct {
 
 	public static MvgProduct getEnum(String value) {
 		switch (value) {
-		case "b": return BUS; 
-		case "u": return SUBWAY; 
-		case "t": return TRAM; 
-		case "s": return TRAIN;
+		case "BUS": return BUS; 
+		case "UBAHN": return SUBWAY; 
+		case "TRAM": return TRAM; 
+		case "SBAHN": return TRAIN;
 		}
 		return null;
 	}
