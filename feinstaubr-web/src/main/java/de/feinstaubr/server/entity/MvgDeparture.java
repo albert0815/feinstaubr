@@ -7,7 +7,6 @@ public class MvgDeparture {
 	private String line;
 	private String destination;
 	private Date departureTime;
-	private MvgStation station;
 	
 	public String getDestination() {
 		return destination;
@@ -35,12 +34,6 @@ public class MvgDeparture {
 	}
 	public void setProduct(MvgProduct product) {
 		this.product = product;
-	}
-	public MvgStation getStation() {
-		return station;
-	}
-	public void setStation(MvgStation station) {
-		this.station = station;
 	}
 	@Override
 	public String toString() {

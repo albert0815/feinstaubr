@@ -96,7 +96,6 @@ public class MvgApi {
 						departure.setDestination(destination);
 						departure.setLine(jsonDeparture.getString("label"));
 						departure.setProduct(MvgProduct.getEnum(jsonDeparture.getString("product")));
-						departure.setStation(station);
 						liveDepartureList.add(departure);
 					} else {
 						LOGGER.severe("unexpected format of MVG api, received: " + jsonValue);
