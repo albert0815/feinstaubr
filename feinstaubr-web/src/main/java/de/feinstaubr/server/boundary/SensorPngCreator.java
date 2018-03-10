@@ -168,7 +168,7 @@ public class SensorPngCreator extends HttpServlet {
 		}
 		chart.addSeries("Vorhersage", datesForecast, tempsForecast).setMarker(SeriesMarkers.NONE).setLineWidth(3).setLineStyle(SeriesLines.DASH_DOT);
 		if (!tempsCurrent.isEmpty()) {
-			chart.addSeries("Ist", datesCurrent, tempsCurrent).setMarker(SeriesMarkers.NONE).setLineWidth(3).setLineStyle(SeriesLines.SOLID);
+			chart.addSeries("Ist", datesCurrent, tempsCurrent).setMarker(SeriesMarkers.NONE).setLineWidth(3).setLineStyle(SeriesLines.SOLID).setLineColor(Color.black);
 		}
 		BufferedImage biChart = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D ig2Chart = biChart.createGraphics();
