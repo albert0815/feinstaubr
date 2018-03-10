@@ -72,33 +72,36 @@ public class MvgApi {
 			}
 			JsonObject o = target.queryParam("footway", footway).request(MediaType.APPLICATION_JSON_TYPE).header("X-MVG-Authorization-Key", "5af1beca494712ed38d313714d4caff6").get(JsonObject.class);
 			JsonArray mvgDepartures = (JsonArray) o.get("departures");
-			List<MvgDeparture> liveDepartureList = new ArrayList<>();
-			Pattern destinationPattern = Pattern.compile(station.getDestinationFilter());
-			Calendar cal = Calendar.getInstance();
-			cal.add(Calendar.MINUTE, 30);
-			Date nowPlusHalfHour = cal.getTime();
-			for (JsonValue jsonValue : mvgDepartures) {
-				if (jsonValue instanceof JsonObject) {
-					JsonObject jsonDeparture = (JsonObject) jsonValue;
-					String destination = jsonDeparture.getString("destination");
-					if (!destinationPattern.matcher(destination).matches()) {
-						continue;
+			if (mvgDepartures.isEmpty()) {
+				station.setDepartures(Collections.emptyList());
+			} else {
+				List<MvgDeparture> liveDepartureList = new ArrayList<>();
+				Pattern destinationPattern = Pattern.compile(station.getDestinationFilter());
+				Calendar cal = Calendar.getInstance();
+				cal.add(Calendar.MINUTE, 30);
+				Date nowPlusHalfHour = cal.getTime();
+				for (JsonValue jsonValue : mvgDepartures) {
+					if (jsonValue instanceof JsonObject) {
+						JsonObject jsonDeparture = (JsonObject) jsonValue;
+						String destination = jsonDeparture.getString("destination");
+						if (!destinationPattern.matcher(destination).matches()) {
+							continue;
+						}
+						Date departureTime = new Date(jsonDeparture.getJsonNumber("departureTime").longValue());
+						if (departureTime.after(nowPlusHalfHour)) {
+							continue;
+						}
+						MvgDeparture departure = new MvgDeparture();
+						departure.setDepartureTime(departureTime);
+						departure.setDestination(destination);
+						departure.setLine(jsonDeparture.getString("label"));
+						departure.setProduct(MvgProduct.getEnum(jsonDeparture.getString("product")));
+						departure.setStation(station);
+						liveDepartureList.add(departure);
+					} else {
+						LOGGER.severe("unexpected format of MVG api, received: " + jsonValue);
 					}
-					Date departureTime = new Date(jsonDeparture.getJsonNumber("departureTime").longValue());
-					if (departureTime.after(nowPlusHalfHour)) {
-						continue;
-					}
-					MvgDeparture departure = new MvgDeparture();
-					departure.setDepartureTime(departureTime);
-					departure.setDestination(destination);
-					departure.setLine(jsonDeparture.getString("label"));
-					departure.setProduct(MvgProduct.getEnum(jsonDeparture.getString("product")));
-					liveDepartureList.add(departure);
-				} else {
-					LOGGER.severe("unexpected format of MVG api, received: " + jsonValue);
 				}
-			}
-			if (!liveDepartureList.isEmpty()) {
 				station.setDepartures(liveDepartureList);
 			}
 		}

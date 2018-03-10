@@ -22,6 +22,7 @@ import javax.ws.rs.core.Response;
 
 import de.feinstaubr.server.entity.DwdForecast;
 import de.feinstaubr.server.entity.DwdForecast_;
+import de.feinstaubr.server.entity.SensorLocation_;
 
 @Stateless
 @Path("forecast")
@@ -32,7 +33,12 @@ public class ForecastApi {
 	@GET
 	@Path("{poi}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getNextForecasts(@PathParam("poi") String poi) {
+	public Response getNextForecastJson(@PathParam("poi") String poi) {
+		DwdForecast result = getNextForecast(poi);
+		return Response.ok(mapForecastToJson(result).build()).build(); 
+	}
+
+	public DwdForecast getNextForecast(String poi) {
 		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 		CriteriaQuery<DwdForecast> query = criteriaBuilder.createQuery(DwdForecast.class);
 		Root<DwdForecast> root = query.from(DwdForecast.class);
@@ -42,10 +48,11 @@ public class ForecastApi {
 			cal.set(Calendar.HOUR_OF_DAY, 8);
 		}
 		Predicate dateStartPredicate = criteriaBuilder.greaterThanOrEqualTo(root.get(DwdForecast_.forecastDate), cal.getTime());
-		query.where(criteriaBuilder.and(dateStartPredicate));
+		Predicate poiPredicate = criteriaBuilder.equal(root.get(DwdForecast_.location).get(SensorLocation_.dwdPoiId), poi);
+		query.where(criteriaBuilder.and(dateStartPredicate, poiPredicate));
 		query.orderBy(criteriaBuilder.asc(root.get(DwdForecast_.forecastDate)));
 		DwdForecast result = em.createQuery(query).setMaxResults(1).getSingleResult();
-		return Response.ok(mapForecastToJson(result).build()).build(); 
+		return result;
 	}
 	
 	@GET
@@ -64,7 +71,9 @@ public class ForecastApi {
 		cal.add(Calendar.DATE, daysToForecast);
 		cal.set(Calendar.HOUR_OF_DAY, 1);
 		Predicate dateEndPredicate = criteriaBuilder.lessThanOrEqualTo(root.get(DwdForecast_.forecastDate), cal.getTime());
-		query.where(criteriaBuilder.and(dateStartPredicate, dateEndPredicate));
+		Predicate poiPredicate = criteriaBuilder.equal(root.get(DwdForecast_.location).get(SensorLocation_.dwdPoiId), poi);
+
+		query.where(criteriaBuilder.and(dateStartPredicate, dateEndPredicate, poiPredicate));
 		query.orderBy(criteriaBuilder.asc(root.get(DwdForecast_.forecastDate)));
 		List<DwdForecast> result = em.createQuery(query).getResultList();
 		JsonArrayBuilder jsonArray = Json.createArrayBuilder();
@@ -73,6 +82,29 @@ public class ForecastApi {
 		}
 		return Response.ok(jsonArray.build()).build();
 	}
+	
+	public List<DwdForecast> getForecastFor24hours(String poi) {
+		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+		CriteriaQuery<DwdForecast> query = criteriaBuilder.createQuery(DwdForecast.class);
+		Root<DwdForecast> root = query.from(DwdForecast.class);
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.HOUR_OF_DAY, 8);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+
+		Predicate dateStartPredicate = criteriaBuilder.greaterThanOrEqualTo(root.get(DwdForecast_.forecastDate), cal.getTime());
+		cal.add(Calendar.DATE, 2);		
+		cal.set(Calendar.HOUR_OF_DAY, 18);
+
+		Predicate dateEndPredicate = criteriaBuilder.lessThanOrEqualTo(root.get(DwdForecast_.forecastDate), cal.getTime());
+		Predicate poiPredicate = criteriaBuilder.equal(root.get(DwdForecast_.location).get(SensorLocation_.dwdPoiId), poi);
+		query.where(criteriaBuilder.and(dateStartPredicate, dateEndPredicate, poiPredicate));
+		query.orderBy(criteriaBuilder.asc(root.get(DwdForecast_.forecastDate)));
+		List<DwdForecast> result = em.createQuery(query).getResultList();
+		return result;
+
+	}
 
 	private JsonObjectBuilder mapForecastToJson(DwdForecast forecast) {
 		JsonObjectBuilder jsonForecast = Json.createObjectBuilder();
@@ -80,7 +112,7 @@ public class ForecastApi {
 		jsonForecast.add("temperature", forecast.getTemperature());
 		jsonForecast.add("pressure", forecast.getPressure());
 		if (forecast.getWeather() != null) {
-			jsonForecast.add("weather", forecast.getWeather().getId());
+			jsonForecast.add("weather", forecast.getWeather().getCodepoint());
 		}
 		jsonForecast.add("chanceOfRain", forecast.getChanceOfRain());
 		jsonForecast.add("cloudCover", forecast.getCloudCoverTotal());

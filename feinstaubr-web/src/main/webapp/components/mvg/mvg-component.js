@@ -30,6 +30,9 @@ class MvgComponent extends HTMLElement {
 						<md-grid-component>
 					`;
 					for (var i = 0; i < stations.length; i++) {
+						if (stations[i].departures.length == 0) {
+							continue;
+						}
 						result += `
 						<div class="mdc-layout-grid__cell">
 							<md-card-component card-title="${stations[i].name}">

@@ -254,6 +254,25 @@ public class SensorApi {
 			}
 		}
 	}
+	
+	public SensorMeasurement getMeasures(String sensorId, String type, Date time) {
+		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+		CriteriaQuery<SensorMeasurement> query = criteriaBuilder.createQuery(SensorMeasurement.class);
+		Root<SensorMeasurement> root = query.from(SensorMeasurement.class);
+		query.select(root);
+		Predicate predicateId = criteriaBuilder.equal(root.get(SensorMeasurement_.sensorId).get(Sensor_.sensorId), sensorId);
+		Predicate predicateType = criteriaBuilder.equal(root.get(SensorMeasurement_.type).get(SensorMeasurementType_.type), type);
+		Predicate predicateTime = criteriaBuilder.greaterThan(root.get(SensorMeasurement_.date), time);
+		query.where(criteriaBuilder.and(predicateId, predicateTime, predicateType));
+		query.orderBy(criteriaBuilder.asc(root.get(SensorMeasurement_.date)));
+		try {
+			SensorMeasurement result = em.createQuery(query).setMaxResults(1).getSingleResult();
+			return result;
+		} catch (NoResultException e) {
+			return null;
+		}
+
+	}
 
 	@Path("{id}/{period}")
 	@GET
