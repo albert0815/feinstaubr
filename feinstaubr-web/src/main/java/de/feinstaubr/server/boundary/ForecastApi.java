@@ -88,14 +88,14 @@ public class ForecastApi {
 		CriteriaQuery<DwdForecast> query = criteriaBuilder.createQuery(DwdForecast.class);
 		Root<DwdForecast> root = query.from(DwdForecast.class);
 		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.HOUR_OF_DAY, 8);
+		cal.set(Calendar.HOUR_OF_DAY, 6);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 
 		Predicate dateStartPredicate = criteriaBuilder.greaterThanOrEqualTo(root.get(DwdForecast_.forecastDate), cal.getTime());
-		cal.add(Calendar.DATE, 2);		
-		cal.set(Calendar.HOUR_OF_DAY, 18);
+		//cal.add(Calendar.DATE, 1);		
+		cal.set(Calendar.HOUR_OF_DAY, 20);
 
 		Predicate dateEndPredicate = criteriaBuilder.lessThanOrEqualTo(root.get(DwdForecast_.forecastDate), cal.getTime());
 		Predicate poiPredicate = criteriaBuilder.equal(root.get(DwdForecast_.location).get(SensorLocation_.dwdPoiId), poi);

@@ -32,9 +32,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
 
+import org.knowm.xchart.CategoryChart;
+import org.knowm.xchart.CategoryChartBuilder;
+import org.knowm.xchart.CategorySeries.CategorySeriesRenderStyle;
 import org.knowm.xchart.VectorGraphicsEncoder;
 import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYChartBuilder;
+import org.knowm.xchart.style.Styler.YAxisPosition;
 import org.knowm.xchart.style.lines.SeriesLines;
 import org.knowm.xchart.style.markers.SeriesMarkers;
 
@@ -64,6 +68,9 @@ public class SensorPngCreator extends HttpServlet {
 		
 		
 		String displayType = req.getParameter("display");
+		if (displayType == null) {
+			displayType = "7.5";
+		}
 		BufferedImage bi;
 		try {
 			switch (displayType) {
@@ -123,6 +130,7 @@ public class SensorPngCreator extends HttpServlet {
 		iconFont = iconFont.deriveFont(Font.PLAIN, 30);
 		Font weatherIconFont = Font.createFont(Font.TRUETYPE_FONT, SensorPngCreator.class.getResourceAsStream("/weathericons-regular-webfont.ttf"));
 		weatherIconFont = weatherIconFont.deriveFont(Font.PLAIN, 30);
+		Font weatherIconFontSmall = weatherIconFont.deriveFont(Font.PLAIN, 16);
 		Font iconFontSmall = iconFont.deriveFont(Font.PLAIN, 14);
 		Font writeFont = Font.createFont(Font.TRUETYPE_FONT, SensorPngCreator.class.getResourceAsStream("/NotoSans-Regular.ttf"));
 		writeFont = writeFont.deriveFont(Font.PLAIN, 25);
@@ -146,17 +154,23 @@ public class SensorPngCreator extends HttpServlet {
 		ig2.setFont(headerFont);
 		ig2.drawString("Wetter", 50, 30);
 		
-		XYChart chart = new XYChartBuilder().build();
+		CategoryChart chart = new CategoryChartBuilder().build();
 		chart.getStyler().setLegendVisible(false);
 		chart.getStyler().setChartBackgroundColor(Color.white);
-		
+		chart.getStyler().setDatePattern("HH:mm");
+		chart.getStyler().setXAxisTickMarkSpacingHint(50);
+		chart.getStyler().setYAxisGroupPosition(2, YAxisPosition.Right);
 
 		// Series
 		List<BigDecimal> tempsForecast = new ArrayList<>();
 		List<BigDecimal> tempsCurrent = new ArrayList<>();
+		List<BigDecimal> precipation = new ArrayList<>();
 		List<Date> datesForecast = new ArrayList<>();
 		List<Date> datesCurrent = new ArrayList<>();
 		List<DwdForecast> forecast24 = forecast.getForecastFor24hours("10865");
+		int interval = 220 / forecast24.size();
+		int currentWeatherLocation = 0;
+		ig2.setFont(weatherIconFontSmall);
 		for (DwdForecast fc : forecast24) {
 			tempsForecast.add(fc.getTemperature());
 			SensorMeasurement measures = sensor.getMeasures("7620363", "temperature", fc.getForecastDate());
@@ -165,23 +179,27 @@ public class SensorPngCreator extends HttpServlet {
 				tempsCurrent.add(measures.getValue());
 			}
 			datesForecast.add(fc.getForecastDate());
+			precipation.add(fc.getChanceOfRain());
+			ig2.drawString(new String(Character.toChars(fc.getWeather().getCodepoint())), 30 + currentWeatherLocation, 60);
+			currentWeatherLocation += interval;
 		}
-		chart.addSeries("Vorhersage", datesForecast, tempsForecast).setMarker(SeriesMarkers.NONE).setLineWidth(3).setLineStyle(SeriesLines.DASH_DOT);
+		chart.addSeries("Vorhersage Temperatur", datesForecast, tempsForecast).setChartCategorySeriesRenderStyle(CategorySeriesRenderStyle.Line).setMarker(SeriesMarkers.NONE).setLineWidth(3).setLineStyle(SeriesLines.DASH_DOT);
+		chart.addSeries("Vorhersage Regen", datesForecast, precipation).setChartCategorySeriesRenderStyle(CategorySeriesRenderStyle.Stick).setMarker(SeriesMarkers.NONE).setLineWidth(3).setLineStyle(SeriesLines.DASH_DOT).setLineColor(Color.black).setYAxisGroup(2);
 		if (!tempsCurrent.isEmpty()) {
 			chart.addSeries("Ist", datesCurrent, tempsCurrent).setMarker(SeriesMarkers.NONE).setLineWidth(3).setLineStyle(SeriesLines.SOLID).setLineColor(Color.black);
 		}
 		BufferedImage biChart = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D ig2Chart = biChart.createGraphics();
 
-		chart.paint(ig2Chart, 250, 158);
-		ig2.drawImage(biChart, 1, 39, null);
+		chart.paint(ig2Chart, 280, 138);
+		ig2.drawImage(biChart, 1, 59, null);
 		ig2.setColor(Color.black);
 
 		//weather current
 		ig2.setFont(writeFontSmall);
 		SimpleDateFormat df = new SimpleDateFormat("dd.MM. HH:mm");
 		int offsetY = 10;
-		int offsetX = 260;
+		int offsetX = 270;
 		List<SensorMeasurement> balkon = sensor.getCurrentSensorData("7620363");
 		List<SensorMeasurement> wohnzimmer = sensor.getCurrentSensorData("30:ae:a4:22:ca:f4");
 		if (!wohnzimmer.isEmpty()) {
