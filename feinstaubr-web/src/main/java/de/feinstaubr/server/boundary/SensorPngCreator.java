@@ -3,10 +3,8 @@ package de.feinstaubr.server.boundary;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.font.GlyphVector;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,11 +13,8 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,24 +25,19 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.Response;
 
 import org.knowm.xchart.CategoryChart;
 import org.knowm.xchart.CategoryChartBuilder;
 import org.knowm.xchart.CategorySeries.CategorySeriesRenderStyle;
-import org.knowm.xchart.VectorGraphicsEncoder;
-import org.knowm.xchart.XYChart;
-import org.knowm.xchart.XYChartBuilder;
 import org.knowm.xchart.style.Styler.YAxisPosition;
 import org.knowm.xchart.style.lines.SeriesLines;
 import org.knowm.xchart.style.markers.SeriesMarkers;
 
-import de.feinstaubr.server.entity.WeatherForecast;
 import de.feinstaubr.server.entity.ForecastSource;
 import de.feinstaubr.server.entity.MvgDeparture;
 import de.feinstaubr.server.entity.MvgStation;
 import de.feinstaubr.server.entity.SensorMeasurement;
-import de.feinstaubr.server.entity.SensorMeasurementType;
+import de.feinstaubr.server.entity.WeatherForecast;
 
 @WebServlet("/display.png")
 public class SensorPngCreator extends HttpServlet {
@@ -252,7 +242,7 @@ public class SensorPngCreator extends HttpServlet {
 			for (MvgDeparture dep : station.getDepartures()) {
 				SimpleDateFormat format = new SimpleDateFormat("HH:mm");
 				String time = format.format(dep.getDepartureTime());
-				ig2.drawString(time + " - " + dep.getDestination(), offsetX + 6, 18 * i + offsetY);
+				ig2.drawString(time + " - " + dep.getLine() + " - " + dep.getDestination(), offsetX + 6, 18 * i + offsetY);
 				if (i > 6) {//second column
 					offsetY = 225;
 					offsetX = offsetX + width / 2;

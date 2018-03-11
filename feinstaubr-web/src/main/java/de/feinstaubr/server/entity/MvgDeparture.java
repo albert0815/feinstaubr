@@ -21,9 +21,6 @@ public class MvgDeparture {
 		this.departureTime = departureTime;
 	}
 	public String getLine() {
-		if (line != null && getProduct() == MvgProduct.SUBWAY) {
-			return "U" + line;
-		}
 		return line;
 	}
 	public void setLine(String line) {
