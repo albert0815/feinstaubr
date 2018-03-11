@@ -101,7 +101,7 @@ alter table WeatherForecast add column forecastSource varchar(255) not null defa
 alter table WeatherForecast add column precipitation numeric(19, 2) null; 
 alter table WeatherForecast add column humidity numeric(19, 2) null; 
 alter table WeatherForecast ALTER COLUMN forecastSource DROP DEFAULT ;
-alter table SensorLocation add column openWeatherId;
+alter table SensorLocation add column openWeatherId varchar(255) null;
 update SensorLocation set openweatherid = '2867714';
 
 create table FeinstaubrConfiguration (
@@ -111,3 +111,4 @@ create table FeinstaubrConfiguration (
 	value varchar(255) null,
 	primary key (id)
 );
+GRANT SELECT ON FeinstaubrConfiguration TO proxyuser;    

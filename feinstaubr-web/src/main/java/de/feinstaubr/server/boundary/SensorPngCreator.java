@@ -177,7 +177,7 @@ public class SensorPngCreator extends HttpServlet {
 				tempsCurrent.add(measures.getValue());
 			}
 			datesForecast.add(fc.getForecastDate());
-			precipation.add(fc.getChanceOfRain());
+			precipation.add(fc.getPrecipitation());
 			ig2.drawString(new String(Character.toChars(fc.getWeather().getCodepoint())), 30 + currentWeatherLocation, 58);
 			currentWeatherLocation += interval;
 		}
