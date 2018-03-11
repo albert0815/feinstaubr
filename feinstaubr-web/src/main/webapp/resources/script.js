@@ -39,14 +39,16 @@
 		
 		if (getPeriod() === "day") {
 			// based on https://www.dwd.de/DE/leistungen/met_verfahren_mosmix/mosmix_stationskatalog.pdf?__blob=publicationFile&v=4
-			jqForecastXHR = $.getJSON("rest/forecast/10865/1")
+			jqForecastXHR = $.getJSON("rest/forecast/10865/OPEN_WEATHER/1")
 			.done(function(data) {
 				foreCast = {};
 				foreCast.temperature = [];
 				foreCast.pressure = [];
+				foreCast.humidity = [];
 				for (i in data) {
 					foreCast.temperature.push([data[i].forecastDate, data[i].temperature])
 					foreCast.pressure.push([data[i].forecastDate, data[i].pressure])
+					foreCast.humidity.push([data[i].forecastDate, data[i].humidity])
 				}
 				drawCharts();
 			}).always(function() {

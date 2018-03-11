@@ -26,13 +26,23 @@ gcloud docker -- push gcr.io/feinstaubr/feinstaubr-web:1.0.0
 docker push gcr.io/feinstaubr/feinstaubr-web:1.0.0
 gcloud compute addresses create feinstaubr-ip --global
 gcloud compute addresses describe feinstaubr-ip
-=> address: 35.186.229.96
+=> address: 35.227.205.81
 
 kubectl create -f kubernetes-feinstaubr-deployment.yaml
 
 
 psql -U postgres --password -f c:\temp\feinstaubr.sql
 pg_dump -U postgres --password feinstaub>dump
+
+# ssl
+
+apt-get update  && apt-get -y install certbot
+certbot certonly --webroot -w /usr/share/nginx/html -d feinstaub.dirkpapenberg.de
+
+https://runnable.com/blog/how-to-use-lets-encrypt-on-kubernetes
+kubectl create secret tls letsencrypt-cert --cert=fullchain.pem --key=tls.key
+
+status batch: geht nicht, certificate konnte zwar ausgestellt werden, aber secret wurde nicht aktualisiert. job nach kube-systme geschoben
 
 C:\temp>
 cloud_sql_proxy_x64 -instances=feinstaubr:europe-west3:feinstaubr-db=tcp:5432 -credential_file=C:\Users\papend\AppData\Local\Temp\Feinstaubr-c5b048be0f3a.json

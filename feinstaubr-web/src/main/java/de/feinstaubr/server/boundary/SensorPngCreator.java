@@ -43,6 +43,7 @@ import org.knowm.xchart.style.lines.SeriesLines;
 import org.knowm.xchart.style.markers.SeriesMarkers;
 
 import de.feinstaubr.server.entity.WeatherForecast;
+import de.feinstaubr.server.entity.ForecastSource;
 import de.feinstaubr.server.entity.MvgDeparture;
 import de.feinstaubr.server.entity.MvgStation;
 import de.feinstaubr.server.entity.SensorMeasurement;
@@ -144,7 +145,7 @@ public class SensorPngCreator extends HttpServlet {
 		//weather forecast
 		ig2.drawRect(0, 0, 639, 197);
 
-		WeatherForecast next = forecast.getNextForecast("10865");
+		WeatherForecast next = forecast.getNextForecast("10865", ForecastSource.OPEN_WEATHER);
 		String upcomingWeather = new String(Character.toChars(next.getWeather().getCodepoint()));
 		ig2.setFont(weatherIconFont);
 		ig2.drawString(upcomingWeather, 5, 35);
@@ -164,7 +165,7 @@ public class SensorPngCreator extends HttpServlet {
 		List<BigDecimal> precipation = new ArrayList<>();
 		List<Date> datesForecast = new ArrayList<>();
 		List<Date> datesCurrent = new ArrayList<>();
-		List<WeatherForecast> forecast24 = forecast.getForecastFor24hours("10865");
+		List<WeatherForecast> forecast24 = forecast.getForecastFor24hours("10865", ForecastSource.OPEN_WEATHER);
 		int interval = 220 / forecast24.size();
 		int currentWeatherLocation = 0;
 		ig2.setFont(weatherIconFontSmall);
@@ -177,7 +178,7 @@ public class SensorPngCreator extends HttpServlet {
 			}
 			datesForecast.add(fc.getForecastDate());
 			precipation.add(fc.getChanceOfRain());
-			ig2.drawString(new String(Character.toChars(fc.getWeather().getCodepoint())), 30 + currentWeatherLocation, 60);
+			ig2.drawString(new String(Character.toChars(fc.getWeather().getCodepoint())), 30 + currentWeatherLocation, 58);
 			currentWeatherLocation += interval;
 		}
 		chart.addSeries("Vorhersage Temperatur", datesForecast, tempsForecast).setChartCategorySeriesRenderStyle(CategorySeriesRenderStyle.Line).setMarker(SeriesMarkers.NONE).setLineWidth(3).setLineStyle(SeriesLines.DASH_DOT);

@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -29,6 +31,12 @@ public class WeatherForecast {
 	private BigDecimal chanceOfRain;
 	private BigDecimal meanWindDirection;
 	private BigDecimal meanWindSpeed;
+	
+	@Enumerated(EnumType.STRING)
+	private ForecastSource forecastSource;
+	private BigDecimal precipitation;
+	private BigDecimal humidity;
+	
 	public Date getForecastDate() {
 		return forecastDate;
 	}
@@ -95,5 +103,24 @@ public class WeatherForecast {
 	public void setLastUpdate(Date lastUpdate) {
 		this.lastUpdate = lastUpdate;
 	}
+	public ForecastSource getForecastSource() {
+		return forecastSource;
+	}
+	public void setForecastSource(ForecastSource forecastSource) {
+		this.forecastSource = forecastSource;
+	}
+	public BigDecimal getPrecipitation() {
+		return precipitation;
+	}
+	public void setPrecipitation(BigDecimal precipitation) {
+		this.precipitation = precipitation;
+	}
+	public BigDecimal getHumidity() {
+		return humidity;
+	}
+	public void setHumidity(BigDecimal humidity) {
+		this.humidity = humidity;
+	}
+	
 	
 }

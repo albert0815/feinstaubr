@@ -1,34 +1,46 @@
-var chartData;
+var chartDataDwd;
+var chartDataOpenWeather;
 
 function loadData() {
 	
         var drawer = new mdc.drawer.MDCTemporaryDrawer(document.querySelector('.mdc-drawer--temporary'));
         document.querySelector('.menu').addEventListener('click', () => {console.log("clicked");drawer.open = true;});
         
-		var jqForecastXHR = $.getJSON("rest/forecast/10865/3")
+		$.getJSON("rest/forecast/10865/DWD/3")
 		.done(function(data) {
-			chartData = data;
-			drawChart();
-		}).always(function() {
-			$("#progressbar").css("display", "none");
+			chartDataDwd = data;
+			$.getJSON("rest/forecast/10865/OPEN_WEATHER/3")
+			.done(function(data) {
+				chartDataOpenWeather = data;
+				drawCharts();
+			}).always(function() {
+				$("#progressbar").css("display", "none");
+			});
 		});
 
 }
 
 
-function drawChart() {
+function drawCharts() {
 	var dataTable = new google.visualization.DataTable();
 	dataTable.addColumn('datetime', 'Zeit');
 //	dataTable.addColumn({type: 'string', role: 'annotation'});
-	dataTable.addColumn('number', 'Vorhersage');
-	var arrayLength = chartData.length;
+	dataTable.addColumn('number', 'Vorhersage DWD');
+	dataTable.addColumn('number', 'Vorhersage Open Weather');
+	var arrayLength = chartDataDwd.length;
 	for (var i = 0; i < arrayLength; i++) {
-		var xAxisDate = new Date(chartData[i].forecastDate);
-		var yValue = chartData[i].temperature;
-		dataTable.addRow([xAxisDate, /*null, */yValue]);
+		var xAxisDate = new Date(chartDataDwd[i].forecastDate);
+		var yValue = chartDataDwd[i].temperature;
+		dataTable.addRow([xAxisDate, /*null, */yValue, null]);
+	}
+	arrayLength = chartDataOpenWeather.length;
+	for (var i = 0; i < arrayLength; i++) {
+		var xAxisDate = new Date(chartDataOpenWeather[i].forecastDate);
+		var yValue = chartDataOpenWeather[i].temperature;
+		dataTable.addRow([xAxisDate, /*null, */null, yValue]);
 	}
 //	dataTable.addRow([new Date(), "Jetzt", null]);
-	var formatDate = new google.visualization.DateFormat({pattern: 'EE HH:mm'});
+	var formatDate = new google.visualization.DateFormat({pattern: 'EEHH:mm'});
 	formatDate.format(dataTable, 0);
 	var chart = new google.visualization.LineChart(document.getElementById("forecastchart"));
 	var formatString = "EE HH:mm";

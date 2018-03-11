@@ -2,6 +2,7 @@ package de.feinstaubr.server.control;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -18,6 +19,7 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 
 import de.feinstaubr.server.entity.WeatherForecast;
+import de.feinstaubr.server.entity.ForecastSource;
 import de.feinstaubr.server.entity.WeatherEnum;
 
 @Stateless
@@ -42,15 +44,17 @@ public class DwdController {
 					try {
 						String [] forecastValues = nextLine.split(";");
 						WeatherForecast forecast = new WeatherForecast();
+						forecast.setForecastSource(ForecastSource.DWD);
 						Date date = dateParser.parse(forecastValues[0].trim() + " " + forecastValues[1].trim());
 						forecast.setForecastDate(date);
 						forecast.setPressure(new BigDecimal(forecastValues[31].trim().replace(',', '.')));
 						forecast.setTemperature(new BigDecimal(forecastValues[2].trim().replace(',', '.')));
 						forecast.setChanceOfRain(new BigDecimal(forecastValues[19].trim().replace(',', '.')));
-						forecast.setCloudCoverTotal(new BigDecimal(forecastValues[26].trim().replace(',', '.')));
+						forecast.setCloudCoverTotal(new BigDecimal(forecastValues[26].trim().replace(',', '.')).divide(new BigDecimal("8")).multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
 						forecast.setMeanWindDirection(new BigDecimal(forecastValues[8].trim().replace(',', '.')));
 						forecast.setMeanWindSpeed(new BigDecimal(forecastValues[9].trim().replace(',', '.')));
-						WeatherEnum weatherEnum = WeatherEnum.getEnum(forecastValues[23]);
+						forecast.setPrecipitation(new BigDecimal(forecastValues[15].trim().replace(',', '.')));
+						WeatherEnum weatherEnum = WeatherEnum.getEnumForDwdId(forecastValues[23]);
 						if (weatherEnum == null) {
 							LOGGER.warning("unknown weather " + forecastValues[23] + " using previous value " + previousWeather);
 							weatherEnum = previousWeather;

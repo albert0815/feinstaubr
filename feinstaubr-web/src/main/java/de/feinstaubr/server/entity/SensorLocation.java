@@ -16,6 +16,7 @@ public class SensorLocation {
 	
 	private String locationName;
 	private String dwdPoiId;
+	private String openWeatherId;
 	
 	@OneToMany(mappedBy="location")
 	private List<Sensor> sensors;
@@ -43,4 +44,14 @@ public class SensorLocation {
 	public void setDwdPoiId(String dwdPoiId) {
 		this.dwdPoiId = dwdPoiId;
 	}
+
+	public String getOpenWeatherId() {
+		return openWeatherId;
+	}
+
+	public void setOpenWeatherId(String openWeatherId) {
+		this.openWeatherId = openWeatherId;
+	}
+	
+	
 }

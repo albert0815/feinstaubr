@@ -95,5 +95,19 @@ alter table mvgstation add column footway int4 null;
 alter table mvgstation add column latitude float8 not null default;
 alter table mvgstation add column longitude float8 not null default;
 
+-- version 0.9
 alter table DwdForecast rename to WeatherForecast;
+alter table WeatherForecast add column forecastSource varchar(255) not null default 'DWD'; 
+alter table WeatherForecast add column precipitation numeric(19, 2) null; 
+alter table WeatherForecast add column humidity numeric(19, 2) null; 
+alter table WeatherForecast ALTER COLUMN forecastSource DROP DEFAULT ;
+alter table SensorLocation add column openWeatherId;
+update SensorLocation set openweatherid = '2867714';
 
+create table FeinstaubrConfiguration (
+	id int8 not null,
+	category varchar(255) not null,
+	key varchar(255) not null,
+	value varchar(255) null,
+	primary key (id)
+);
