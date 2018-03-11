@@ -1,4 +1,4 @@
-package de.feinstaubr.server.boundary;
+package de.feinstaubr.server.control;
 
 import java.util.Date;
 import java.util.List;
@@ -17,7 +17,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import de.feinstaubr.server.entity.DwdForecast;
+import de.feinstaubr.server.entity.WeatherForecast;
 import de.feinstaubr.server.entity.DwdForecast_;
 import de.feinstaubr.server.entity.SensorLocation;
 
@@ -30,7 +30,7 @@ public class DwdDataReadScheduler {
 	private EntityManager em;
 	
 	@Inject
-	private DwdApi dwd;
+	private DwdController dwd;
 
 	@PostConstruct
 	public void init() {
@@ -46,15 +46,15 @@ public class DwdDataReadScheduler {
 		sensorLocationQuery.select(sensorLocationRoot);
 		List<SensorLocation> locations = em.createQuery(sensorLocationQuery).getResultList();
 		for (SensorLocation loc : locations) {
-			List<DwdForecast> forecasts = dwd.getForecasts(loc.getDwdPoiId());
-			for (DwdForecast forecast : forecasts) {
+			List<WeatherForecast> forecasts = dwd.getForecasts(loc.getDwdPoiId());
+			for (WeatherForecast forecast : forecasts) {
 				forecast.setLocation(loc);
-				CriteriaQuery<DwdForecast> forecastQuery = criteriaBuilder.createQuery(DwdForecast.class);
-				Root<DwdForecast> forecastRoot = forecastQuery.from(DwdForecast.class);
+				CriteriaQuery<WeatherForecast> forecastQuery = criteriaBuilder.createQuery(WeatherForecast.class);
+				Root<WeatherForecast> forecastRoot = forecastQuery.from(WeatherForecast.class);
 				Predicate forecastDatePredicate = criteriaBuilder.equal(forecastRoot.get(DwdForecast_.forecastDate), forecast.getForecastDate());
 				Predicate locationPredicate = criteriaBuilder.equal(forecastRoot.get(DwdForecast_.location), loc);
 				forecastQuery.where(criteriaBuilder.and(forecastDatePredicate, locationPredicate));
-				DwdForecast forecastInDb = null;
+				WeatherForecast forecastInDb = null;
 				try {
 					forecastInDb = em.createQuery(forecastQuery).getSingleResult();
 					if (forecastInDb != null) {

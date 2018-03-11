@@ -41,6 +41,8 @@ import javax.ws.rs.core.Response;
 import com.goebl.simplify.PointExtractor;
 import com.goebl.simplify.Simplify;
 
+import de.feinstaubr.server.control.Mq135Calculator;
+import de.feinstaubr.server.control.PressureCalculator;
 import de.feinstaubr.server.entity.Sensor;
 import de.feinstaubr.server.entity.SensorMeasurement;
 import de.feinstaubr.server.entity.SensorMeasurementType;

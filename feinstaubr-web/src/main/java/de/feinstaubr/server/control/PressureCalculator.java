@@ -1,4 +1,4 @@
-package de.feinstaubr.server.boundary;
+package de.feinstaubr.server.control;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

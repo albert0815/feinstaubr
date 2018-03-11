@@ -1,6 +1,6 @@
 package de.feinstaubr.server.entity;
 
-public enum DwdWeather {
+public enum WeatherEnum {
 	//as per https://www.dwd.de/DE/leistungen/opendata/help/schluessel_datenformate/poi_present_weather_zuordnung_pdf.pdf?__blob=publicationFile&v=2
 	//icons as per http://erikflowers.github.io/weather-icons/
 	WOLKENLOS("1","wolkenlos", 61453),
@@ -43,14 +43,14 @@ public enum DwdWeather {
 	private String label;
 	private int codepoint;
 	
-	private DwdWeather(String id, String label, int codepoint) {
+	private WeatherEnum(String id, String label, int codepoint) {
 		this.id = id;
 		this.label = label;
 		this.codepoint = codepoint;
 	}
 	
-	public static DwdWeather getEnum(String id) {
-        for(DwdWeather v : values()) {
+	public static WeatherEnum getEnum(String id) {
+        for(WeatherEnum v : values()) {
             if(v.id.equals(id.trim())) {
             	return v;
             }

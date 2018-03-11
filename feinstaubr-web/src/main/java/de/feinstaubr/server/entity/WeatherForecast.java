@@ -11,7 +11,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
 @Entity
-public class DwdForecast {
+public class WeatherForecast {
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long id;
@@ -24,7 +24,7 @@ public class DwdForecast {
 	private Date lastUpdate;
 	private BigDecimal temperature;
 	private BigDecimal pressure;
-	private DwdWeather weather;
+	private WeatherEnum weather;
 	private BigDecimal cloudCoverTotal;
 	private BigDecimal chanceOfRain;
 	private BigDecimal meanWindDirection;
@@ -47,10 +47,10 @@ public class DwdForecast {
 	public void setPressure(BigDecimal pressure) {
 		this.pressure = pressure;
 	}
-	public DwdWeather getWeather() {
+	public WeatherEnum getWeather() {
 		return weather;
 	}
-	public void setWeather(DwdWeather weather) {
+	public void setWeather(WeatherEnum weather) {
 		this.weather = weather;
 	}
 	public BigDecimal getCloudCoverTotal() {

@@ -42,7 +42,7 @@ import org.knowm.xchart.style.Styler.YAxisPosition;
 import org.knowm.xchart.style.lines.SeriesLines;
 import org.knowm.xchart.style.markers.SeriesMarkers;
 
-import de.feinstaubr.server.entity.DwdForecast;
+import de.feinstaubr.server.entity.WeatherForecast;
 import de.feinstaubr.server.entity.MvgDeparture;
 import de.feinstaubr.server.entity.MvgStation;
 import de.feinstaubr.server.entity.SensorMeasurement;
@@ -144,7 +144,7 @@ public class SensorPngCreator extends HttpServlet {
 		//weather forecast
 		ig2.drawRect(0, 0, 639, 197);
 
-		DwdForecast next = forecast.getNextForecast("10865");
+		WeatherForecast next = forecast.getNextForecast("10865");
 		String upcomingWeather = new String(Character.toChars(next.getWeather().getCodepoint()));
 		ig2.setFont(weatherIconFont);
 		ig2.drawString(upcomingWeather, 5, 35);
@@ -164,11 +164,11 @@ public class SensorPngCreator extends HttpServlet {
 		List<BigDecimal> precipation = new ArrayList<>();
 		List<Date> datesForecast = new ArrayList<>();
 		List<Date> datesCurrent = new ArrayList<>();
-		List<DwdForecast> forecast24 = forecast.getForecastFor24hours("10865");
+		List<WeatherForecast> forecast24 = forecast.getForecastFor24hours("10865");
 		int interval = 220 / forecast24.size();
 		int currentWeatherLocation = 0;
 		ig2.setFont(weatherIconFontSmall);
-		for (DwdForecast fc : forecast24) {
+		for (WeatherForecast fc : forecast24) {
 			tempsForecast.add(fc.getTemperature());
 			SensorMeasurement measures = sensor.getMeasures("7620363", "temperature", fc.getForecastDate());
 			if (measures != null) {

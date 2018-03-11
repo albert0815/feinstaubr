@@ -1,4 +1,4 @@
-package de.feinstaubr.server.boundary;
+package de.feinstaubr.server.control;
 
 public class Mq135Calculator {
 	private static final double MQ135_SCALINGFACTOR = 116.6020682;

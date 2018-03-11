@@ -94,3 +94,6 @@ alter table dwdforecast add constraint fdwkuh33uhiufdshfudsgfuz foreign key (loc
 alter table mvgstation add column footway int4 null;
 alter table mvgstation add column latitude float8 not null default;
 alter table mvgstation add column longitude float8 not null default;
+
+alter table DwdForecast rename to WeatherForecast;
+

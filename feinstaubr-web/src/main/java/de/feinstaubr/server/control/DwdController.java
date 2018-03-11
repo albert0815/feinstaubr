@@ -1,4 +1,4 @@
-package de.feinstaubr.server.boundary;
+package de.feinstaubr.server.control;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -17,15 +17,15 @@ import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
 
-import de.feinstaubr.server.entity.DwdForecast;
-import de.feinstaubr.server.entity.DwdWeather;
+import de.feinstaubr.server.entity.WeatherForecast;
+import de.feinstaubr.server.entity.WeatherEnum;
 
 @Stateless
-public class DwdApi {
-	private static final Logger LOGGER = Logger.getLogger(DwdApi.class.getName());
+public class DwdController {
+	private static final Logger LOGGER = Logger.getLogger(DwdController.class.getName());
 	
-	public List<DwdForecast> getForecasts(String poi) {
-		List<DwdForecast> resultList = new ArrayList<>();
+	public List<WeatherForecast> getForecasts(String poi) {
+		List<WeatherForecast> resultList = new ArrayList<>();
 		try {
 			URL url = new URL("https://opendata.dwd.de/weather/local_forecasts/poi/" + poi + "-MOSMIX.csv");
 			URLConnection connection = url.openConnection();
@@ -36,12 +36,12 @@ public class DwdApi {
 				scanner.nextLine();
 				SimpleDateFormat dateParser = new SimpleDateFormat("dd.MM.yy HH:mm");
 				dateParser.setTimeZone(TimeZone.getTimeZone("UTC"));
-				DwdWeather previousWeather = DwdWeather.HEITER;//Default weather, sometimes dwd doesnt provide anything
+				WeatherEnum previousWeather = WeatherEnum.HEITER;//Default weather, sometimes dwd doesnt provide anything
 				while (scanner.hasNext()) {
 					String nextLine = scanner.nextLine();
 					try {
 						String [] forecastValues = nextLine.split(";");
-						DwdForecast forecast = new DwdForecast();
+						WeatherForecast forecast = new WeatherForecast();
 						Date date = dateParser.parse(forecastValues[0].trim() + " " + forecastValues[1].trim());
 						forecast.setForecastDate(date);
 						forecast.setPressure(new BigDecimal(forecastValues[31].trim().replace(',', '.')));
@@ -50,7 +50,7 @@ public class DwdApi {
 						forecast.setCloudCoverTotal(new BigDecimal(forecastValues[26].trim().replace(',', '.')));
 						forecast.setMeanWindDirection(new BigDecimal(forecastValues[8].trim().replace(',', '.')));
 						forecast.setMeanWindSpeed(new BigDecimal(forecastValues[9].trim().replace(',', '.')));
-						DwdWeather weatherEnum = DwdWeather.getEnum(forecastValues[23]);
+						WeatherEnum weatherEnum = WeatherEnum.getEnum(forecastValues[23]);
 						if (weatherEnum == null) {
 							LOGGER.warning("unknown weather " + forecastValues[23] + " using previous value " + previousWeather);
 							weatherEnum = previousWeather;
