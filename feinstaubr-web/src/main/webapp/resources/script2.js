@@ -13,6 +13,7 @@ function loadData() {
 			.done(function(data) {
 				chartDataOpenWeather = data;
 				drawCharts();
+				populateWeatherList();
 			}).always(function() {
 				$("#progressbar").css("display", "none");
 			});
@@ -20,29 +21,89 @@ function loadData() {
 
 }
 
+function populateWeatherList() {
+	visualizeForecast(chartDataDwd, "#weather-dwd");
+	visualizeForecast(chartDataOpenWeather, "#weather-open-weather");
+}
+
+function visualizeForecast(forecast, id) {
+	var template = document.createElement('template');
+
+	template.innerHTML = `
+								<li class="mdc-list-divider" role="separator"></li>
+								<li class="mdc-list-item">
+									<span class="mdc-list-item__graphic">
+										<i class="wi" style="font-size:2rem"></i>
+									</span>
+									<span class="mdc-list-item__text">
+										<span class="mdc-list-item__secondary-text"></span>
+									</span>
+								</li>	
+								
+	`;
+	
+	var arrayLength = forecast.length;
+	for (var i = 0; i < arrayLength; i++) {
+		var date = new Date(forecast[i].forecastDate);
+		var today = new Date();
+		var tomorrow = new Date();
+		tomorrow.setDate(today.getDate() + 1);
+		if (date < today) {
+			continue;
+		}
+		var li = template.content.cloneNode(true);
+		li.querySelector("i").innerHTML = "&#" + forecast[i].weather + ";"
+		var dateString;
+		if (date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()) {
+			dateString = "Heute";
+		} else if (date.getDate() === tomorrow.getDate() && date.getMonth() === tomorrow.getMonth() && date.getFullYear() === tomorrow.getFullYear()) {
+			dateString = "Morgen";
+		} else {
+			dateString = pad(date.getDate()) + "." + pad(date.getMonth() + 1) + "." + pad(date.getFullYear());
+		}
+		dateString = dateString + " " + pad(date.getHours()) + ":" + pad(date.getMinutes());
+		li.querySelector(".mdc-list-item__text").prepend(document.createTextNode(dateString));
+		li.querySelector(".mdc-list-item__secondary-text").appendChild(document.createTextNode(forecast[i].temperature.toLocaleString() + "° C"));
+		document.querySelector(id).appendChild(li);
+	}
+
+}
+function pad(n) {
+	return n<10 ? '0'+n : n;
+}
+
 
 function drawCharts() {
 	var dataTable = new google.visualization.DataTable();
 	dataTable.addColumn('datetime', 'Zeit');
 //	dataTable.addColumn({type: 'string', role: 'annotation'});
-	dataTable.addColumn('number', 'Vorhersage DWD');
-	dataTable.addColumn('number', 'Vorhersage Open Weather');
+	dataTable.addColumn('number', 'Temperatur DWD');
+	dataTable.addColumn('number', 'Temperatur Open Weather');
+	dataTable.addColumn('number', 'Niederschlag DWD');
+	dataTable.addColumn('number', 'Niederschlag Open Weather');
+
 	var arrayLength = chartDataDwd.length;
 	for (var i = 0; i < arrayLength; i++) {
 		var xAxisDate = new Date(chartDataDwd[i].forecastDate);
 		var yValue = chartDataDwd[i].temperature;
-		dataTable.addRow([xAxisDate, /*null, */yValue, null]);
+		dataTable.addRow([xAxisDate, /*null, */yValue, null, chartDataDwd[i].precipitation, null]);
 	}
 	arrayLength = chartDataOpenWeather.length;
 	for (var i = 0; i < arrayLength; i++) {
 		var xAxisDate = new Date(chartDataOpenWeather[i].forecastDate);
 		var yValue = chartDataOpenWeather[i].temperature;
-		dataTable.addRow([xAxisDate, /*null, */null, yValue]);
+		dataTable.addRow([xAxisDate, /*null, */null, yValue, null, chartDataOpenWeather[i].precipitation]);
 	}
-//	dataTable.addRow([new Date(), "Jetzt", null]);
+	
 	var formatDate = new google.visualization.DateFormat({pattern: 'EEHH:mm'});
 	formatDate.format(dataTable, 0);
-	var chart = new google.visualization.LineChart(document.getElementById("forecastchart"));
+	var formatCelsius = new google.visualization.NumberFormat({suffix: '° C'});
+	formatCelsius.format(dataTable, 1);
+	formatCelsius.format(dataTable, 2);
+	var formatMilliliter = new google.visualization.NumberFormat({suffix: ' ml'});
+	formatMilliliter.format(dataTable, 3);
+	formatMilliliter.format(dataTable, 4);
+	var chart = new google.visualization.ComboChart(document.getElementById("forecastchart"));
 	var formatString = "EE HH:mm";
 	var minDate = new Date();
 	var maxDate = new Date();
@@ -60,6 +121,7 @@ function drawCharts() {
 	}
 
 	var options = {
+			seriesType: 'line',
 	        width: '100%',
 	        height: '100%',
 	        chartArea: {
@@ -88,7 +150,10 @@ function drawCharts() {
 	        format: formatString
 		},
         series: {
-            0: { color: 'red' }
+            0: {targetAxisIndex:0, color: 'indianred' },
+            1: {targetAxisIndex:0, color: 'red'},
+            2: {targetAxisIndex:1, type:'bars', color:'lightblue'},
+            3: {targetAxisIndex:1, type:'bars', color:'blue'}
         },
         annotations: {
             stem: {
