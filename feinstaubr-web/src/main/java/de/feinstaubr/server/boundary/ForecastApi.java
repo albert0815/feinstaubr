@@ -91,6 +91,10 @@ public class ForecastApi {
 		CriteriaQuery<WeatherForecast> query = criteriaBuilder.createQuery(WeatherForecast.class);
 		Root<WeatherForecast> root = query.from(WeatherForecast.class);
 		Calendar cal = Calendar.getInstance();
+		if (cal.get(Calendar.HOUR_OF_DAY) > 18) {
+			cal.add(Calendar.DATE, 1);
+		}
+
 		cal.set(Calendar.HOUR_OF_DAY, 6);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
@@ -98,7 +102,7 @@ public class ForecastApi {
 
 		Predicate dateStartPredicate = criteriaBuilder.greaterThanOrEqualTo(root.get(WeatherForecast_.forecastDate), cal.getTime());
 		//cal.add(Calendar.DATE, 1);		
-		cal.set(Calendar.HOUR_OF_DAY, 20);
+		cal.set(Calendar.HOUR_OF_DAY, 19);
 
 		Predicate dateEndPredicate = criteriaBuilder.lessThanOrEqualTo(root.get(WeatherForecast_.forecastDate), cal.getTime());
 		Predicate poiPredicate = criteriaBuilder.equal(root.get(WeatherForecast_.location).get(SensorLocation_.dwdPoiId), poi);

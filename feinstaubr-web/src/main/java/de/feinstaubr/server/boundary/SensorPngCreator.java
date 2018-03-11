@@ -156,8 +156,8 @@ public class SensorPngCreator extends HttpServlet {
 		chart.getStyler().setLegendVisible(false);
 		chart.getStyler().setChartBackgroundColor(Color.white);
 		chart.getStyler().setDatePattern("HH:mm");
-		chart.getStyler().setXAxisTickMarkSpacingHint(50);
 		chart.getStyler().setYAxisGroupPosition(2, YAxisPosition.Right);
+		chart.getStyler().setChartPadding(0);
 
 		// Series
 		List<BigDecimal> tempsForecast = new ArrayList<>();
@@ -189,8 +189,8 @@ public class SensorPngCreator extends HttpServlet {
 		BufferedImage biChart = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D ig2Chart = biChart.createGraphics();
 
-		chart.paint(ig2Chart, 280, 138);
-		ig2.drawImage(biChart, 1, 59, null);
+		chart.paint(ig2Chart, 270, 130);
+		ig2.drawImage(biChart, 5, 65, null);
 		ig2.setColor(Color.black);
 
 		//weather current
