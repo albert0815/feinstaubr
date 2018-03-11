@@ -83,8 +83,6 @@ public class SensorPngCreator extends HttpServlet {
 			throw new RuntimeException(e);
 		}
 			
-//		ig2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-//                RenderingHints.VALUE_ANTIALIAS_ON);
 
 		if (req.getParameter("debug") != null) {
 			resp.setHeader("Content-type", "image/png");
@@ -123,8 +121,7 @@ public class SensorPngCreator extends HttpServlet {
 
 		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D ig2 = bi.createGraphics();
-		
-		
+		ig2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		Font iconFont = Font.createFont(Font.TRUETYPE_FONT, SensorPngCreator.class.getResourceAsStream("/MaterialIcons-Regular.ttf"));
 		iconFont = iconFont.deriveFont(Font.PLAIN, 30);
@@ -133,7 +130,7 @@ public class SensorPngCreator extends HttpServlet {
 		Font weatherIconFontSmall = weatherIconFont.deriveFont(Font.PLAIN, 16);
 		Font iconFontSmall = iconFont.deriveFont(Font.PLAIN, 14);
 		Font writeFont = Font.createFont(Font.TRUETYPE_FONT, SensorPngCreator.class.getResourceAsStream("/NotoSans-Regular.ttf"));
-		writeFont = writeFont.deriveFont(Font.PLAIN, 25);
+		writeFont = writeFont.deriveFont(Font.PLAIN, 22);
 		Font smallWriteFont = writeFont.deriveFont(Font.PLAIN, 16);
 		Font headerFont = Font.createFont(Font.TRUETYPE_FONT, SensorPngCreator.class.getResourceAsStream("/NotoSans-Bold.ttf"));
 		headerFont = headerFont.deriveFont(Font.PLAIN, 24);
@@ -184,10 +181,10 @@ public class SensorPngCreator extends HttpServlet {
 			currentWeatherLocation += interval;
 		}
 		chart.addSeries("Vorhersage Temperatur", datesForecast, tempsForecast).setChartCategorySeriesRenderStyle(CategorySeriesRenderStyle.Line).setMarker(SeriesMarkers.NONE).setLineWidth(3).setLineStyle(SeriesLines.DASH_DOT);
-		chart.addSeries("Vorhersage Regen", datesForecast, precipation).setChartCategorySeriesRenderStyle(CategorySeriesRenderStyle.Stick).setMarker(SeriesMarkers.NONE).setLineWidth(3).setLineStyle(SeriesLines.DASH_DOT).setLineColor(Color.black).setYAxisGroup(2);
 		if (!tempsCurrent.isEmpty()) {
-			chart.addSeries("Ist", datesCurrent, tempsCurrent).setMarker(SeriesMarkers.NONE).setLineWidth(3).setLineStyle(SeriesLines.SOLID).setLineColor(Color.black);
+			chart.addSeries("Ist", datesCurrent, tempsCurrent).setChartCategorySeriesRenderStyle(CategorySeriesRenderStyle.Line).setMarker(SeriesMarkers.DIAMOND).setMarkerColor(Color.black).setLineWidth(3).setLineStyle(SeriesLines.SOLID).setLineColor(Color.black);
 		}
+		chart.addSeries("Vorhersage Regen", datesForecast, precipation).setChartCategorySeriesRenderStyle(CategorySeriesRenderStyle.Stick).setMarker(SeriesMarkers.NONE).setLineWidth(3).setLineStyle(SeriesLines.SOLID).setLineColor(Color.black).setYAxisGroup(2);
 		BufferedImage biChart = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D ig2Chart = biChart.createGraphics();
 
@@ -206,7 +203,7 @@ public class SensorPngCreator extends HttpServlet {
 			ig2.drawString("Wohnzimmer (" + df.format(wohnzimmer.get(0).getDate()) + ")", 5 + offsetX, 10 + offsetY);
 		}
 		if (!balkon.isEmpty()) {
-			ig2.drawString("Balkon (" + df.format(balkon.get(0).getDate()) + ")", 155+ offsetX, 10 + offsetY);
+			ig2.drawString("Balkon (" + df.format(balkon.get(0).getDate()) + ")", 180 + offsetX, 10 + offsetY);
 		}
 		
 		offsetY += 10;
