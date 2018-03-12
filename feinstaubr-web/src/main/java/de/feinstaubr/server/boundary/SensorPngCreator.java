@@ -41,6 +41,8 @@ import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.chart.renderer.xy.XYSplineRenderer;
 import org.jfree.chart.ui.RectangleInsets;
+import org.jfree.data.Range;
+import org.jfree.data.RangeType;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.time.Hour;
 import org.jfree.data.time.TimePeriodAnchor;
@@ -142,6 +144,7 @@ public class SensorPngCreator extends HttpServlet {
 		Font writeFont = Font.createFont(Font.TRUETYPE_FONT, SensorPngCreator.class.getResourceAsStream("/NotoSans-Regular.ttf"));
 		writeFont = writeFont.deriveFont(Font.PLAIN, 22);
 		Font smallWriteFont = writeFont.deriveFont(Font.PLAIN, 16);
+		Font verySmallWriteFont = writeFont.deriveFont(Font.PLAIN, 10);
 		Font headerFont = Font.createFont(Font.TRUETYPE_FONT, SensorPngCreator.class.getResourceAsStream("/NotoSans-Bold.ttf"));
 		headerFont = headerFont.deriveFont(Font.PLAIN, 24);
 		Font smallHeaderFont = headerFont.deriveFont(Font.PLAIN, 16);
@@ -193,16 +196,34 @@ public class SensorPngCreator extends HttpServlet {
 		dataset3.setXPosition(TimePeriodAnchor.MIDDLE);
 
 		
-		DateAxis xAxis = new DateAxis();
-        NumberAxis yAxis = new NumberAxis();
-
         XYPlot plot = new XYPlot();
+
+        DateAxis xAxis = new DateAxis();
+		xAxis.setAxisLinePaint(Color.black);
+		xAxis.setTickMarkPaint(Color.black);
+		xAxis.setTickLabelFont(verySmallWriteFont);
+        NumberAxis yAxis = new NumberAxis();
+        yAxis.setAxisLinePaint(Color.black);
+        yAxis.setTickMarkPaint(Color.black);
+        yAxis.setTickLabelFont(verySmallWriteFont);
+        NumberAxis yAxis2 = new NumberAxis();
+        yAxis2.setAxisLinePaint(Color.black);
+        yAxis2.setTickMarkPaint(Color.black);
+        yAxis2.setAutoRangeMinimumSize(20);
+        yAxis2.setRangeType(RangeType.POSITIVE);
+        yAxis2.setTickLabelFont(verySmallWriteFont);
+        plot.setDomainAxis(xAxis); 
+        plot.setRangeAxis(0, yAxis);
+        plot.setRangeAxis(1, yAxis2);
+
         plot.setDataset(dataset1);
         plot.setDataset(1, dataset3);
         plot.setDataset(2, dataset2);
-        plot.setBackgroundPaint(Color.lightGray);
+        plot.setBackgroundPaint(Color.black);
+        plot.setOutlinePaint(Color.black);
         plot.setDomainGridlinePaint(Color.white);
         plot.setRangeGridlinePaint(Color.white);
+        plot.setAxisOffset(new RectangleInsets(4, 4, 4, 4));
         
         XYSplineRenderer renderer1 = new XYSplineRenderer();
         renderer1.setSeriesStroke(0, new BasicStroke(3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 5.0f, new float[]{5.0f}, 0.0f));
@@ -217,10 +238,6 @@ public class SensorPngCreator extends HttpServlet {
 		plot.setRenderer(0, renderer1);
 		plot.setRenderer(1, renderer2);
 		plot.setRenderer(2, xyBarRenderer);
-        NumberAxis axis2 = new NumberAxis();
-        plot.setDomainAxis(xAxis); 
-        plot.setRangeAxis(0, yAxis);
-        plot.setRangeAxis(1, axis2);
         plot.mapDatasetToRangeAxis(2, 1);
         plot.setBackgroundPaint(Color.white);
         
