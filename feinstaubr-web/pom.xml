@@ -47,14 +47,14 @@
 			<version>1.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.knowm.xchart</groupId>
-			<artifactId>xchart</artifactId>
-			<version>3.5.1</version>
-		</dependency>
-		<dependency>
 			<groupId>com.luckycatlabs</groupId>
 			<artifactId>SunriseSunsetCalculator</artifactId>
 			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jfree</groupId>
+			<artifactId>jfreechart</artifactId>
+			<version>1.5.0</version>
 		</dependency>
 
 	</dependencies>

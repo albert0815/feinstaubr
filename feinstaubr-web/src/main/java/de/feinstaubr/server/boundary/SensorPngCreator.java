@@ -1,19 +1,18 @@
 package de.feinstaubr.server.boundary;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,12 +25,28 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.knowm.xchart.CategoryChart;
-import org.knowm.xchart.CategoryChartBuilder;
-import org.knowm.xchart.CategorySeries.CategorySeriesRenderStyle;
-import org.knowm.xchart.style.Styler.YAxisPosition;
-import org.knowm.xchart.style.lines.SeriesLines;
-import org.knowm.xchart.style.markers.SeriesMarkers;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.DatasetRenderingOrder;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.chart.renderer.xy.StandardXYBarPainter;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.chart.renderer.xy.XYSplineRenderer;
+import org.jfree.chart.ui.RectangleInsets;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.time.Hour;
+import org.jfree.data.time.TimePeriodAnchor;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.xy.XYSeries;
 
 import de.feinstaubr.server.control.WeatherIconCreator;
 import de.feinstaubr.server.entity.ForecastSource;
@@ -151,49 +166,86 @@ public class SensorPngCreator extends HttpServlet {
 		ig2.setFont(headerFont);
 		ig2.drawString("Wetter", 50, 30);
 		
-		CategoryChart chart = new CategoryChartBuilder().build();
-		chart.getStyler().setLegendVisible(false);
-		chart.getStyler().setChartBackgroundColor(Color.white);
-		chart.getStyler().setDatePattern("HH:mm");
-		chart.getStyler().setYAxisGroupPosition(2, YAxisPosition.Right);
-		chart.getStyler().setChartPadding(0);
 
-		// Series
-		List<BigDecimal> tempsForecast = new ArrayList<>();
-		List<BigDecimal> tempsCurrent = new ArrayList<>();
-		List<BigDecimal> precipation = new ArrayList<>();
-		List<Date> datesForecast = new ArrayList<>();
-		List<Date> datesCurrent = new ArrayList<>();
 		List<WeatherForecast> forecast24 = forecast.getForecastFor24hours("10865", ForecastSource.OPEN_WEATHER);
+
+
+		TimeSeries series = new TimeSeries("TemperatureForecast");
+		TimeSeries series2 = new TimeSeries("TemperatureCurrent");
+		TimeSeries series3 = new TimeSeries("PrecipitationForecast");
+		for (WeatherForecast fc : forecast24) {
+			Hour hour = new Hour(fc.getForecastDate());
+			series.add(hour, fc.getTemperature());
+			series2.add(hour, fc.getPrecipitation());
+			
+			SensorMeasurement measures = sensor.getMeasures("7620363", "temperature", fc.getForecastDate());
+			if (measures != null) {
+				series3.add(hour, measures.getValue());
+			}
+
+		}
+		TimeSeriesCollection dataset1 = new TimeSeriesCollection();
+		dataset1.addSeries(series);
+		TimeSeriesCollection dataset2 = new TimeSeriesCollection();
+		dataset2.addSeries(series2);
+		TimeSeriesCollection dataset3 = new TimeSeriesCollection();
+		dataset3.addSeries(series3);
+		dataset3.setXPosition(TimePeriodAnchor.MIDDLE);
+
+		
+		DateAxis xAxis = new DateAxis();
+        NumberAxis yAxis = new NumberAxis();
+
+        XYPlot plot = new XYPlot();
+        plot.setDataset(dataset1);
+        plot.setDataset(1, dataset3);
+        plot.setDataset(2, dataset2);
+        plot.setBackgroundPaint(Color.lightGray);
+        plot.setDomainGridlinePaint(Color.white);
+        plot.setRangeGridlinePaint(Color.white);
+        
+        XYSplineRenderer renderer1 = new XYSplineRenderer();
+        renderer1.setSeriesStroke(0, new BasicStroke(3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 5.0f, new float[]{5.0f}, 0.0f));
+        renderer1.setSeriesShapesVisible(0, false);
+        XYSplineRenderer renderer2 = new XYSplineRenderer();
+        renderer2.setSeriesStroke(0, new BasicStroke(3));
+
+        XYBarRenderer xyBarRenderer = new XYBarRenderer();
+        xyBarRenderer.setShadowVisible(false);
+        xyBarRenderer.setBarPainter(new StandardXYBarPainter());
+        xyBarRenderer.setMargin(0.4);
+		plot.setRenderer(0, renderer1);
+		plot.setRenderer(1, renderer2);
+		plot.setRenderer(2, xyBarRenderer);
+        NumberAxis axis2 = new NumberAxis();
+        plot.setDomainAxis(xAxis); 
+        plot.setRangeAxis(0, yAxis);
+        plot.setRangeAxis(1, axis2);
+        plot.mapDatasetToRangeAxis(2, 1);
+        plot.setBackgroundPaint(Color.white);
+        
+        // create and return the chart panel...
+        JFreeChart chart = new JFreeChart(plot);
+        chart.removeLegend();
+        chart.setBackgroundPaint(Color.white);
+        
+
+
+        
+        chart.draw(ig2, new Rectangle2D.Double(1, 57, 270, 140));
+        ig2.setColor(Color.black);
+		// Series
 		int interval = 220 / forecast24.size();
 		int currentWeatherLocation = 0;
 		ig2.setFont(weatherIconFontSmall);
 		for (WeatherForecast fc : forecast24) {
-			tempsForecast.add(fc.getTemperature());
-			SensorMeasurement measures = sensor.getMeasures("7620363", "temperature", fc.getForecastDate());
-			if (measures != null) {
-				datesCurrent.add(measures.getDate());
-				tempsCurrent.add(measures.getValue());
-			}
-			datesForecast.add(fc.getForecastDate());
-			precipation.add(fc.getPrecipitation());
 			Integer weatherIconForWeather2 = weatherIconCreator.getWeatherIconForWeather(fc);
 			if (weatherIconForWeather2 != null) {
 				ig2.drawString(new String(Character.toChars(weatherIconForWeather2)), 30 + currentWeatherLocation, 58);
 			}
 			currentWeatherLocation += interval;
 		}
-		chart.addSeries("Vorhersage Temperatur", datesForecast, tempsForecast).setChartCategorySeriesRenderStyle(CategorySeriesRenderStyle.Line).setMarker(SeriesMarkers.NONE).setLineWidth(3).setLineStyle(SeriesLines.DASH_DOT);
-		if (!tempsCurrent.isEmpty()) {
-			chart.addSeries("Ist", datesCurrent, tempsCurrent).setChartCategorySeriesRenderStyle(CategorySeriesRenderStyle.Line).setMarker(SeriesMarkers.DIAMOND).setMarkerColor(Color.black).setLineWidth(3).setLineStyle(SeriesLines.SOLID).setLineColor(Color.black);
-		}
-		chart.addSeries("Vorhersage Regen", datesForecast, precipation).setChartCategorySeriesRenderStyle(CategorySeriesRenderStyle.Stick).setMarker(SeriesMarkers.NONE).setLineWidth(3).setLineStyle(SeriesLines.SOLID).setLineColor(Color.black).setYAxisGroup(2);
-		BufferedImage biChart = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D ig2Chart = biChart.createGraphics();
 
-		chart.paint(ig2Chart, 270, 130);
-		ig2.drawImage(biChart, 5, 65, null);
-		ig2.setColor(Color.black);
 
 		//weather current
 		ig2.setFont(writeFontSmall);
