@@ -2,7 +2,9 @@ $("#progressbar").css("display", "block");
 
 $.getJSON("rest/forecast/10865/OPEN_WEATHER")
 	.done(function(data) {
-		$("#icon").html("&#" + data.weather + ";");
+		if (data.weather) {
+			$("#icon").html("&#" + data.weather + ";");
+		}
 		var d = new Date(data.forecastDate);
 		$("#forecast_time").html(pad(d.getHours()) + ":" + pad(d.getMinutes()) + " Uhr");
 		$("#forecast_temp").html(data.temperature.toLocaleString() + "° C");

@@ -51,6 +51,11 @@
 			<artifactId>xchart</artifactId>
 			<version>3.5.1</version>
 		</dependency>
+		<dependency>
+			<groupId>com.luckycatlabs</groupId>
+			<artifactId>SunriseSunsetCalculator</artifactId>
+			<version>1.2</version>
+		</dependency>
 
 	</dependencies>
 

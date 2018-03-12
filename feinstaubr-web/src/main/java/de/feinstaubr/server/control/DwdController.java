@@ -18,9 +18,8 @@ import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
 
-import de.feinstaubr.server.entity.WeatherForecast;
 import de.feinstaubr.server.entity.ForecastSource;
-import de.feinstaubr.server.entity.WeatherEnum;
+import de.feinstaubr.server.entity.WeatherForecast;
 
 @Stateless
 public class DwdController {
@@ -30,6 +29,7 @@ public class DwdController {
 		List<WeatherForecast> resultList = new ArrayList<>();
 		try {
 			URL url = new URL("https://opendata.dwd.de/weather/local_forecasts/poi/" + poi + "-MOSMIX.csv");
+			LOGGER.info("requesting forcast data from dwd from " + url);
 			URLConnection connection = url.openConnection();
 			try (Scanner scanner = new Scanner(connection.getInputStream())) {
 				//3 comment lines on the top of the csv files
@@ -38,7 +38,6 @@ public class DwdController {
 				scanner.nextLine();
 				SimpleDateFormat dateParser = new SimpleDateFormat("dd.MM.yy HH:mm");
 				dateParser.setTimeZone(TimeZone.getTimeZone("UTC"));
-				WeatherEnum previousWeather = WeatherEnum.HEITER;//Default weather, sometimes dwd doesnt provide anything
 				while (scanner.hasNext()) {
 					String nextLine = scanner.nextLine();
 					try {
@@ -54,14 +53,7 @@ public class DwdController {
 						forecast.setMeanWindDirection(new BigDecimal(forecastValues[8].trim().replace(',', '.')));
 						forecast.setMeanWindSpeed(new BigDecimal(forecastValues[9].trim().replace(',', '.')));
 						forecast.setPrecipitation(new BigDecimal(forecastValues[15].trim().replace(',', '.')));
-						WeatherEnum weatherEnum = WeatherEnum.getEnumForDwdId(forecastValues[23]);
-						if (weatherEnum == null) {
-							LOGGER.warning("unknown weather " + forecastValues[23] + " using previous value " + previousWeather);
-							weatherEnum = previousWeather;
-						} else {
-							previousWeather = weatherEnum;
-						}
-						forecast.setWeather(weatherEnum);
+						forecast.setWeather(forecastValues[23].trim());
 						resultList.add(forecast);
 					} catch (RuntimeException | ParseException e) {
 						LOGGER.warning("unable to parse forecast csv value '" + nextLine + "' due to " + e.getMessage());
@@ -74,7 +66,10 @@ public class DwdController {
 			LOGGER.log(Level.SEVERE, "unable to retrieve forcasts for " + poi, e);
 		} catch (IOException e) {
 			LOGGER.log(Level.SEVERE, "unable to retrieve forcasts for " + poi, e);
+		} catch (RuntimeException e) {
+			LOGGER.log(Level.SEVERE, "unable to retrieve forcasts for " + poi, e);
 		}
 		return resultList;
 	}
+
 }

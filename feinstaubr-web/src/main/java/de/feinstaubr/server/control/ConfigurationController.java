@@ -2,6 +2,7 @@ package de.feinstaubr.server.control;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -23,6 +24,11 @@ public class ConfigurationController {
 		Predicate predicateCategory = criteriaBuilder.equal(root.get(FeinstaubrConfiguration_.category), category);
 		Predicate predicateKey = criteriaBuilder.equal(root.get(FeinstaubrConfiguration_.key), key);
 		query.where(criteriaBuilder.and(predicateCategory, predicateKey));
-		return em.createQuery(query).getSingleResult().getValue();
+		try {
+			FeinstaubrConfiguration singleResult = em.createQuery(query).getSingleResult();
+			return singleResult.getValue();
+		} catch (NoResultException e) {
+			return null;
+		}
 	}
 }

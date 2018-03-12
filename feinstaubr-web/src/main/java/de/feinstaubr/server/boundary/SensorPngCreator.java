@@ -33,6 +33,7 @@ import org.knowm.xchart.style.Styler.YAxisPosition;
 import org.knowm.xchart.style.lines.SeriesLines;
 import org.knowm.xchart.style.markers.SeriesMarkers;
 
+import de.feinstaubr.server.control.WeatherIconCreator;
 import de.feinstaubr.server.entity.ForecastSource;
 import de.feinstaubr.server.entity.MvgDeparture;
 import de.feinstaubr.server.entity.MvgStation;
@@ -53,6 +54,9 @@ public class SensorPngCreator extends HttpServlet {
 	
 	@Inject
 	private MvgApi mvg;
+	
+	@Inject
+	private WeatherIconCreator weatherIconCreator;
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -136,9 +140,14 @@ public class SensorPngCreator extends HttpServlet {
 		ig2.drawRect(0, 0, 639, 197);
 
 		WeatherForecast next = forecast.getNextForecast("10865", ForecastSource.OPEN_WEATHER);
-		String upcomingWeather = new String(Character.toChars(next.getWeather().getCodepoint()));
-		ig2.setFont(weatherIconFont);
-		ig2.drawString(upcomingWeather, 5, 35);
+		if (next != null) {
+			Integer weatherIconForWeather = weatherIconCreator.getWeatherIconForWeather(next);
+			if (weatherIconForWeather != null) {
+				String upcomingWeather = new String(Character.toChars(weatherIconForWeather));
+				ig2.setFont(weatherIconFont);
+				ig2.drawString(upcomingWeather, 5, 35);
+			}
+		}
 		ig2.setFont(headerFont);
 		ig2.drawString("Wetter", 50, 30);
 		
@@ -168,7 +177,10 @@ public class SensorPngCreator extends HttpServlet {
 			}
 			datesForecast.add(fc.getForecastDate());
 			precipation.add(fc.getPrecipitation());
-			ig2.drawString(new String(Character.toChars(fc.getWeather().getCodepoint())), 30 + currentWeatherLocation, 58);
+			Integer weatherIconForWeather2 = weatherIconCreator.getWeatherIconForWeather(fc);
+			if (weatherIconForWeather2 != null) {
+				ig2.drawString(new String(Character.toChars(weatherIconForWeather2)), 30 + currentWeatherLocation, 58);
+			}
 			currentWeatherLocation += interval;
 		}
 		chart.addSeries("Vorhersage Temperatur", datesForecast, tempsForecast).setChartCategorySeriesRenderStyle(CategorySeriesRenderStyle.Line).setMarker(SeriesMarkers.NONE).setLineWidth(3).setLineStyle(SeriesLines.DASH_DOT);

@@ -1,5 +1,6 @@
 package de.feinstaubr.server.entity;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -17,6 +18,8 @@ public class SensorLocation {
 	private String locationName;
 	private String dwdPoiId;
 	private String openWeatherId;
+	private double latitude;
+	private double longitude;
 	
 	@OneToMany(mappedBy="location")
 	private List<Sensor> sensors;
@@ -52,6 +55,20 @@ public class SensorLocation {
 	public void setOpenWeatherId(String openWeatherId) {
 		this.openWeatherId = openWeatherId;
 	}
-	
-	
+
+	public double getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(double latitude) {
+		this.latitude = latitude;
+	}
+
+	public double getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(double longitude) {
+		this.longitude = longitude;
+	}
 }

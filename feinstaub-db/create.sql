@@ -112,3 +112,153 @@ create table FeinstaubrConfiguration (
 	primary key (id)
 );
 GRANT SELECT ON FeinstaubrConfiguration TO proxyuser;    
+
+
+--version 1.0
+alter table WeatherForecast drop column weather;
+alter table WeatherForecast add column weather varchar(255) null;
+alter table SensorLocation add column latitude float8 not null default 0;
+alter table SensorLocation add column longitude float8 not null default 0;
+update sensorlocation set latitude=48.1093, longitude = 11.5804;
+alter table SensorLocation ALTER column latitude drop default;
+alter table SensorLocation ALTER column longitude drop default;
+CREATE UNIQUE INDEX fdsuiorhziu3o2hfjdsbfk on FeinstaubrConfiguration (category, key);
+alter table FeinstaubrConfiguration add column description varchar(255) null;
+--as per https://www.dwd.de/DE/leistungen/opendata/help/schluessel_datenformate/poi_present_weather_zuordnung_pdf.pdf?__blob=publicationFile&v=2
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.1', 'CLEAR', 'wolkenlos');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.2', 'CLOUDY', 'heiter');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.3', 'CLOUDY', 'bewölkt');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.4', 'COVERED', 'bedeckt');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.5', 'FOG', 'Nebel');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.6', 'FOG', 'gefrierender Nebel');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.7', 'RAIN', 'leichter Regen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.8', 'RAIN', 'Regen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.9', 'RAIN', 'kräftiger Regen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.10', 'HAIL', 'gefrierender Regen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.11', 'HAIL', 'kräftiger gefrierender Regen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.12', 'SLEET', 'Schneeregen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.13', 'SLEET', 'kräftiger Schneeregen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.14', 'SNOW', 'leichter Schneefall');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.15', 'SNOW', 'Schneefall');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.16', 'SNOW', 'kräftiger Schneefall');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.17', 'HAIL', 'Eiskörner');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.18', 'SHOWER', 'Regenschauer');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.19', 'SHOWER', 'kräftiger Regenschauer');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.20', 'SLEET', 'Schneeregenschauer');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.21', 'SLEET', 'kräftiger Schneeregenschauer');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.22', 'SNOW', 'Schneeschauer');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.23', 'SNOW', 'kräftiger Schneeregenschauer');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.24', 'SLEET', 'Graupelschauer');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.25', 'SLEET', 'kräftiger Graupelschauer');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.26', 'THUNDERSTORM', 'Gewitter ohne Niederschlag');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.27', 'THUNDERSTORM', 'Gewitter');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.28', 'THUNDERSTORM', 'kräftiges Gewitter');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.29', 'THUNDERSTORM', 'Gewitter mit Hagel');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.30', 'THUNDERSTORM', 'kräftiges Gewitter mit Hagel');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.31', 'STORM', 'Böen');
+
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'dwd', 'weather.61', 'RAIN', 'Regen');
+
+
+-- as per https://openweathermap.org/weather-conditions
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.200', 'THUNDERSTORM', 'Gewitter mit leichtem Regen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.201', 'THUNDERSTORM', 'Gewitter mit Regen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.202', 'THUNDERSTORM', 'Gewitter mit starkem Regen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.210', 'THUNDERSTORM', 'leichtes Gewitter');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.211', 'THUNDERSTORM', 'Gewitter');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.212', 'THUNDERSTORM', 'schweres Gewitter');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.221', 'THUNDERSTORM', 'sehr schweres Gewitter');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.230', 'THUNDERSTORM', 'Gewitter mit leichtem Nieselregen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.231', 'THUNDERSTORM', 'Gewitter mit Nieselregen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.232', 'THUNDERSTORM', 'Gewitter mit starkem Nieselregen');
+
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.300', 'RAIN', 'leichter Nieselregen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.301', 'RAIN', 'Nieselregen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.302', 'RAIN', 'starker Nieselregen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.310', 'RAIN', 'leichter Nieselregen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.311', 'RAIN', 'Nieselregen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.312', 'RAIN', 'starker Nieselregen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.313', 'SHOWER', 'Regenschauer und Nieselregen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.314', 'SHOWER', 'starke Regenschauer und Nieselregen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.321', 'SHOWER', 'Nieselregenschauer');
+
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.500', 'RAIN', 'leichter Regen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.501', 'RAIN', 'mäßiger Regen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.502', 'RAIN', 'starker Regen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.503', 'RAIN', 'sehr schwerer Regen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.504', 'RAIN', 'extremer Regen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.511', 'HAIL', 'gefrierender Regen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.520', 'SHOWER', 'leichter Regenschauer');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.521', 'SHOWER', 'Regenschauer');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.522', 'SHOWER', 'starker Regenschauer');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.531', 'SHOWER', 'starker Regenschauer');
+
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.600', 'SNOW', 'leichter Schnee');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.601', 'SNOW', 'Schnee');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.602', 'SNOW', 'starker Schneefall');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.611', 'SLEET', 'Schneeregen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.612', 'SLEET', 'Schneeregenschauer');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.615', 'SLEET', 'leichter Regen und Schnee');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.616', 'SLEET', 'Regen und Schnee');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.620', 'SNOW', 'leichter Schneeschauer');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.621', 'SNOW', 'Schneeschauer');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.622', 'SNOW', 'starker Schneeschauer');
+
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.701', 'FOG', 'Nebel');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.741', 'FOG', 'Nebel');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.771', 'STORM', 'Böen');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.781', 'STORM', 'Tornado');
+
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.800', 'CLEAR', 'klarer Himmel');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.801', 'CLOUDY', 'ein paar Wolken');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.802', 'CLOUDY', 'aufgelockerte Bewölkung');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.803', 'CLOUDY', 'aufgelockerte Bewölkung');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.804', 'COVERED', 'bewölkt');
+
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.900', 'STORM', 'Tornado');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.905', 'STORM', 'windig');
+insert into FeinstaubrConfiguration values (nextval('hibernate_sequence'), 'openweather', 'weather.906', 'HAIL', 'Hagel');
+
+-- mapping for the weather icons font as per http://erikflowers.github.io/weather-icons/
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'CLEAR.day', '61453');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'CLEAR.night', '61486');
+
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'CLOUDY.neutral', '61459');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'CLOUDY.day', '61442');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'CLOUDY.night', '61574');
+
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'COVERED.neutral', '61459');
+
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'SHOWER.neutral', '61466');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'SHOWER.day', '61449');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'SHOWER.night', '61481');
+
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'SLEET.neutral', '61621');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'SLEET.day', '61618');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'SLEET.night', '61620');
+
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'RAIN.neutral', '61465');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'RAIN.day', '61448');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'RAIN.night', '61494');
+
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'SNOW.neutral', 'f01b');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'SNOW.day', '61450');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'SNOW.night', '61482');
+
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'HAIL.neutral', '61461');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'HAIL.day', '61444');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'HAIL.night', '61476');
+
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'THUNDERSTORM.neutral', '61470');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'THUNDERSTORM.day', '61456');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'THUNDERSTORM.night', '61485');
+
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'FOG.neutral', '61460');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'FOG.day', '61443');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'FOG.night', '61514');
+
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'STORM.neutral', '61457');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'STORM.day', '61440');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'STORM.night', '61474');
+
+

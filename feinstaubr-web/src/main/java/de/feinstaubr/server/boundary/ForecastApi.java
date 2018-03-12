@@ -4,10 +4,12 @@ import java.util.Calendar;
 import java.util.List;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -20,6 +22,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import de.feinstaubr.server.control.WeatherIconCreator;
 import de.feinstaubr.server.entity.ForecastSource;
 import de.feinstaubr.server.entity.SensorLocation_;
 import de.feinstaubr.server.entity.WeatherForecast;
@@ -31,12 +34,19 @@ public class ForecastApi {
 	@PersistenceContext
 	private EntityManager em;
 	
+	@Inject
+	private WeatherIconCreator weatherIconCreator;
+	
 	@GET
 	@Path("{poi}/{source}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getNextForecastJson(@PathParam("poi") String poi, @PathParam("source") ForecastSource source) {
 		WeatherForecast result = getNextForecast(poi, source);
-		return Response.ok(mapForecastToJson(result).build()).build(); 
+		if (result != null) {
+			return Response.ok(mapForecastToJson(result).build()).build(); 
+		} else {
+			return Response.ok().build(); 
+		}
 	}
 
 	public WeatherForecast getNextForecast(String poi, ForecastSource source) {
@@ -53,8 +63,12 @@ public class ForecastApi {
 		Predicate sourcePredicate = criteriaBuilder.equal(root.get(WeatherForecast_.forecastSource), source);
 		query.where(criteriaBuilder.and(dateStartPredicate, poiPredicate, sourcePredicate));
 		query.orderBy(criteriaBuilder.asc(root.get(WeatherForecast_.forecastDate)));
-		WeatherForecast result = em.createQuery(query).setMaxResults(1).getSingleResult();
-		return result;
+		try {
+			WeatherForecast result = em.createQuery(query).setMaxResults(1).getSingleResult();
+			return result;
+		} catch (NoResultException e) {
+			return null;
+		}
 	}
 	
 	@GET
@@ -125,7 +139,10 @@ public class ForecastApi {
 			jsonForecast.add("pressure", forecast.getPressure());
 		}
 		if (forecast.getWeather() != null) {
-			jsonForecast.add("weather", forecast.getWeather().getCodepoint());
+			Integer weatherIconForWeather = weatherIconCreator.getWeatherIconForWeather(forecast);
+			if (weatherIconForWeather != null) {
+				jsonForecast.add("weather", weatherIconForWeather);
+			}
 		}
 		if (forecast.getChanceOfRain() != null) {
 			jsonForecast.add("chanceOfRain", forecast.getChanceOfRain());

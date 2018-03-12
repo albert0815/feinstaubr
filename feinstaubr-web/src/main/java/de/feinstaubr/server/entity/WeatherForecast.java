@@ -26,7 +26,8 @@ public class WeatherForecast {
 	private Date lastUpdate;
 	private BigDecimal temperature;
 	private BigDecimal pressure;
-	private WeatherEnum weather;
+
+	private String weather;
 	private BigDecimal cloudCoverTotal;
 	private BigDecimal chanceOfRain;
 	private BigDecimal meanWindDirection;
@@ -55,10 +56,10 @@ public class WeatherForecast {
 	public void setPressure(BigDecimal pressure) {
 		this.pressure = pressure;
 	}
-	public WeatherEnum getWeather() {
+	public String getWeather() {
 		return weather;
 	}
-	public void setWeather(WeatherEnum weather) {
+	public void setWeather(String weather) {
 		this.weather = weather;
 	}
 	public BigDecimal getCloudCoverTotal() {
@@ -120,7 +121,5 @@ public class WeatherForecast {
 	}
 	public void setHumidity(BigDecimal humidity) {
 		this.humidity = humidity;
-	}
-	
-	
+	}	
 }

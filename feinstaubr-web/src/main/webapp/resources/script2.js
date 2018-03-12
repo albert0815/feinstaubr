@@ -1,5 +1,4 @@
-var chartDataDwd;
-var chartDataOpenWeather;
+var chartData = [];
 
 function loadData() {
 	
@@ -31,7 +30,7 @@ function visualizeForecast(forecast, id) {
 
 	template.innerHTML = `
 								<li class="mdc-list-divider" role="separator"></li>
-								<li class="mdc-list-item">
+								<li class="mdc-list-item" style="height:auto;">
 									<span class="mdc-list-item__graphic">
 										<i class="wi" style="font-size:2rem"></i>
 									</span>
@@ -52,7 +51,9 @@ function visualizeForecast(forecast, id) {
 			continue;
 		}
 		var li = template.content.cloneNode(true);
-		li.querySelector("i").innerHTML = "&#" + forecast[i].weather + ";"
+		if (forecast[i].weather) {
+			li.querySelector("i").innerHTML = "&#" + forecast[i].weather + ";"
+		}
 		var dateString;
 		if (date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()) {
 			dateString = "Heute";
@@ -63,7 +64,11 @@ function visualizeForecast(forecast, id) {
 		}
 		dateString = dateString + " " + pad(date.getHours()) + ":" + pad(date.getMinutes());
 		li.querySelector(".mdc-list-item__text").prepend(document.createTextNode(dateString));
-		li.querySelector(".mdc-list-item__secondary-text").appendChild(document.createTextNode(forecast[i].temperature.toLocaleString() + "° C"));
+		li.querySelector(".mdc-list-item__secondary-text").innerHTML = 
+						"Temperatur: " + forecast[i].temperature.toLocaleString() + "° C<br />"+
+						"Niederschlag: " + forecast[i].precipitation.toLocaleString() + " ml <br />" +
+						"Bewölkung: " + forecast[i].cloudCover.toLocaleString() + "% <br />" +
+						"Luftdruck: " + forecast[i].pressure.toLocaleString() + " hPA <br />";
 		document.querySelector(id).appendChild(li);
 	}
 
