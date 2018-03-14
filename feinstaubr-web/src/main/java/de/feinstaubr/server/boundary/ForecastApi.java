@@ -165,7 +165,7 @@ public class ForecastApi {
 		} else {
 			jsonForecast.add("precipitation", 0);
 		}
-//		jsonForecast.add("windSpeed", forecast.getMeanWindSpeed());
+		jsonForecast.add("forecastSource", forecast.getForecastSource().toString());
 //		jsonForecast.add("windDirection", forecast.getMeanWindDirection());
 		return jsonForecast;
 	}

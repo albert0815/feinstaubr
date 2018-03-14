@@ -90,8 +90,13 @@ public class SensorApi {
 		JsonArray sensorDataValues = o.getJsonArray("sensordatavalues");
 		for (int i = 0; i < sensorDataValues.size(); i++) {
 			JsonObject sensorData = sensorDataValues.getJsonObject(i);
-			SensorMeasurementType measurementType = em.find(SensorMeasurementType.class, sensorData.getString("value_type"));
+			String typeFromMessage = sensorData.getString("value_type");
+			if (typeFromMessage.contains("_")) {
+				typeFromMessage = typeFromMessage.substring(typeFromMessage.indexOf('_') + 1);
+			}
+			SensorMeasurementType measurementType = em.find(SensorMeasurementType.class, typeFromMessage);
 			if (measurementType == null) {
+				LOGGER.warning("received unexpected measure type " + typeFromMessage);
 				continue;
 			}
 			SensorMeasurement measurement = new SensorMeasurement();

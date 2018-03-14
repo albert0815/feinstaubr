@@ -10,6 +10,8 @@ function loadData() {
 			chartData = data;
 			drawCharts();
 			populateWeatherList();
+		}).always(function() {
+			$("#progressbar").css("display", "none");
 		});
 
 }
