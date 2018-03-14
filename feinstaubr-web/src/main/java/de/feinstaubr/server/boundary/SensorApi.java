@@ -91,8 +91,8 @@ public class SensorApi {
 		for (int i = 0; i < sensorDataValues.size(); i++) {
 			JsonObject sensorData = sensorDataValues.getJsonObject(i);
 			String typeFromMessage = sensorData.getString("value_type");
-			if (typeFromMessage.contains("_")) {
-				typeFromMessage = typeFromMessage.substring(typeFromMessage.indexOf('_') + 1);
+			if (typeFromMessage.startsWith("BME280_")) {
+				typeFromMessage = typeFromMessage.substring("BME280_".length() + 1);
 			}
 			SensorMeasurementType measurementType = em.find(SensorMeasurementType.class, typeFromMessage);
 			if (measurementType == null) {
@@ -139,8 +139,8 @@ public class SensorApi {
 				measurement.setCalculatedValue(calculatedPpm);
 			} else if ("pressure".equals(measurementType.getType())) {
 //				Luftdruck auf Meereshöhe = Barometeranzeige / (1-Temperaturgradient*Höhe/Temperatur + Temperaturgradient * Höhe in Kelvin)^(0,03416/Temperaturgradient)
-//				BigDecimal temperatureMeasurement = getLatestOutsideTemperature(sensor);
-//				measurement.setCalculatedValue(PressureCalculator.calculatePressure(measurement.getValue(), temperatureMeasurement, 545));//FIXME sensor.getHeight()
+				BigDecimal temperatureMeasurement = getLatestOutsideTemperature(sensor);
+				measurement.setCalculatedValue(PressureCalculator.calculatePressure(measurement.getValue(), temperatureMeasurement, 545));//FIXME sensor.getHeight()
 			}
 			LOGGER.info("saving new measurement " + measurement);
 			em.persist(measurement);
