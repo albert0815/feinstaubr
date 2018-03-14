@@ -115,22 +115,23 @@ public class SensorApi {
 			
 			measurement.setType(measurementType);
 			measurement.setValue(new BigDecimal(sensorData.getString("value")));
+			BigDecimal value = measurement.getValue();
 			if ("co2".equals(measurementType.getType())) {
-				if (measurement.getValue().intValue() == 0) {
+				if (value.intValue() == 0) {
 					LOGGER.warning("ignoring value 0 as this is clearly wrong");
 					return;
 				}
 				int minimum;
 				try {
 					minimum = getMinimumCo2ValueOfLast7Days(sensor.getSensorId());
-					if (minimum > measurement.getValue().intValue()) {
-						minimum = measurement.getValue().intValue();
+					if (minimum > value.intValue()) {
+						minimum = value.intValue();
 					}
 				} catch (NoResultException e) {
-					minimum = measurement.getValue().intValue();
+					minimum = value.intValue();
 				}
 				double ro = Mq135Calculator.getRo(minimum);
-				int ppm = Mq135Calculator.getPpm(measurement.getValue().intValue(), ro);
+				int ppm = Mq135Calculator.getPpm(value.intValue(), ro);
 				if (ppm == -1) {
 					LOGGER.warning("ignoring value " + sensorData.getString("value") + " as the corresponding ppm cannot be calculated due to invalid ro... ");
 					return;
@@ -140,7 +141,10 @@ public class SensorApi {
 			} else if ("pressure".equals(measurementType.getType())) {
 //				Luftdruck auf Meereshöhe = Barometeranzeige / (1-Temperaturgradient*Höhe/Temperatur + Temperaturgradient * Höhe in Kelvin)^(0,03416/Temperaturgradient)
 				BigDecimal temperatureMeasurement = getLatestOutsideTemperature(sensor);
-				measurement.setCalculatedValue(PressureCalculator.calculatePressure(measurement.getValue(), temperatureMeasurement, 545));//FIXME sensor.getHeight()
+				if (sensorData.getString("value_type").startsWith("BME280")) {
+					value = value.divide(new BigDecimal(100));
+				}
+				measurement.setCalculatedValue(PressureCalculator.calculatePressure(value, temperatureMeasurement, 545));//FIXME sensor.getHeight()
 			}
 			LOGGER.info("saving new measurement " + measurement);
 			em.persist(measurement);
