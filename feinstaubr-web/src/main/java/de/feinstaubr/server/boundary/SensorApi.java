@@ -92,7 +92,7 @@ public class SensorApi {
 			JsonObject sensorData = sensorDataValues.getJsonObject(i);
 			String typeFromMessage = sensorData.getString("value_type");
 			if (typeFromMessage.startsWith("BME280_")) {
-				typeFromMessage = typeFromMessage.substring("BME280_".length() + 1);
+				typeFromMessage = typeFromMessage.substring("BME280_".length());
 			}
 			SensorMeasurementType measurementType = em.find(SensorMeasurementType.class, typeFromMessage);
 			if (measurementType == null) {
