@@ -5,24 +5,17 @@ function loadData() {
         var drawer = new mdc.drawer.MDCTemporaryDrawer(document.querySelector('.mdc-drawer--temporary'));
         document.querySelector('.menu').addEventListener('click', () => {console.log("clicked");drawer.open = true;});
         
-		$.getJSON("rest/forecast/10865/DWD/3")
+		$.getJSON("rest/forecast/home/3")
 		.done(function(data) {
-			chartDataDwd = data;
-			$.getJSON("rest/forecast/10865/OPEN_WEATHER/3")
-			.done(function(data) {
-				chartDataOpenWeather = data;
-				drawCharts();
-				populateWeatherList();
-			}).always(function() {
-				$("#progressbar").css("display", "none");
-			});
+			chartData = data;
+			drawCharts();
+			populateWeatherList();
 		});
 
 }
 
 function populateWeatherList() {
-	visualizeForecast(chartDataDwd, "#weather-dwd");
-	visualizeForecast(chartDataOpenWeather, "#weather-open-weather");
+	visualizeForecast(chartData, "#weather");
 }
 
 function visualizeForecast(forecast, id) {
@@ -82,32 +75,22 @@ function drawCharts() {
 	var dataTable = new google.visualization.DataTable();
 	dataTable.addColumn('datetime', 'Zeit');
 //	dataTable.addColumn({type: 'string', role: 'annotation'});
-	dataTable.addColumn('number', 'Temperatur DWD');
-	dataTable.addColumn('number', 'Temperatur Open Weather');
-	dataTable.addColumn('number', 'Niederschlag DWD');
-	dataTable.addColumn('number', 'Niederschlag Open Weather');
+	dataTable.addColumn('number', 'Temperatur');
+	dataTable.addColumn('number', 'Niederschlag');
 
-	var arrayLength = chartDataDwd.length;
+	var arrayLength = chartData.length;
 	for (var i = 0; i < arrayLength; i++) {
-		var xAxisDate = new Date(chartDataDwd[i].forecastDate);
-		var yValue = chartDataDwd[i].temperature;
-		dataTable.addRow([xAxisDate, /*null, */yValue, null, chartDataDwd[i].precipitation, null]);
-	}
-	arrayLength = chartDataOpenWeather.length;
-	for (var i = 0; i < arrayLength; i++) {
-		var xAxisDate = new Date(chartDataOpenWeather[i].forecastDate);
-		var yValue = chartDataOpenWeather[i].temperature;
-		dataTable.addRow([xAxisDate, /*null, */null, yValue, null, chartDataOpenWeather[i].precipitation]);
+		var xAxisDate = new Date(chartData[i].forecastDate);
+		var yValue = chartData[i].temperature;
+		dataTable.addRow([xAxisDate, /*null, */ chartData[i].temperature, chartData[i].precipitation]);
 	}
 	
 	var formatDate = new google.visualization.DateFormat({pattern: 'EEHH:mm'});
 	formatDate.format(dataTable, 0);
 	var formatCelsius = new google.visualization.NumberFormat({suffix: '° C'});
 	formatCelsius.format(dataTable, 1);
-	formatCelsius.format(dataTable, 2);
 	var formatMilliliter = new google.visualization.NumberFormat({suffix: ' ml'});
-	formatMilliliter.format(dataTable, 3);
-	formatMilliliter.format(dataTable, 4);
+	formatMilliliter.format(dataTable, 2);
 	var chart = new google.visualization.ComboChart(document.getElementById("forecastchart"));
 	var formatString = "EE HH:mm";
 	var minDate = new Date();
@@ -155,10 +138,8 @@ function drawCharts() {
 	        format: formatString
 		},
         series: {
-            0: {targetAxisIndex:0, color: 'indianred' },
-            1: {targetAxisIndex:0, color: 'red'},
-            2: {targetAxisIndex:1, type:'bars', color:'lightblue'},
-            3: {targetAxisIndex:1, type:'bars', color:'blue'}
+            0: {targetAxisIndex:0, color: 'red' },
+            1: {targetAxisIndex:1, type:'bars', color:'blue'},
         },
         annotations: {
             stem: {

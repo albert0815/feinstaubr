@@ -15,6 +15,8 @@ public class SensorLocation {
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long id;
 	
+	private String externalId;
+	
 	private String locationName;
 	private String dwdPoiId;
 	private String openWeatherId;
@@ -71,4 +73,13 @@ public class SensorLocation {
 	public void setLongitude(double longitude) {
 		this.longitude = longitude;
 	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
 }

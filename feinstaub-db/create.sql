@@ -262,3 +262,22 @@ insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('
 insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weathericons', 'STORM.night', '61474');
 
 
+-- 1.1
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'mvg', 'maxDepartures', '4');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'mvg', 'departureInterval', '20');
+
+create table DisplayConfiguration (
+	id int8 not null,
+	displayType varchar(255) not null,
+	sensorLocationId int8 null,
+	primary key (id)
+);
+alter table DisplayConfiguration add constraint felkfjueiew3948dd foreign key (sensorLocationId) references SensorLocation;
+GRANT SELECT ON DisplayConfiguration TO proxyuser;    
+
+insert into DisplayConfiguration values (nextval('hibernate_sequence'), '7.5', 149998);
+
+alter table sensorlocation add column externalId varchar(255) not null default '';
+CREATE UNIQUE INDEX liiufzztretzfjhgi86 on sensorlocation (externalId);
+update sensorlocation set externalId = 'home';
+alter table sensorlocation alter column externalId drop default;

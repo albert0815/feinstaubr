@@ -1,6 +1,6 @@
 $("#progressbar").css("display", "block");
 
-$.getJSON("rest/forecast/10865/OPEN_WEATHER")
+$.getJSON("rest/forecast/home")
 	.done(function(data) {
 		if (data.weather) {
 			$("#icon").html("&#" + data.weather + ";");

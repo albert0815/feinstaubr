@@ -13,6 +13,7 @@
 	labels.set("SDS_P2", " PM2.5 in μg/m³");
 	labels.set("pressure", " hPa");
 	labels.set("co2", " PPM CO2");
+	labels.set("gas", " IAQ");
 
 	
 	function loadData() {
@@ -39,7 +40,7 @@
 		
 		if (getPeriod() === "day") {
 			// based on https://www.dwd.de/DE/leistungen/met_verfahren_mosmix/mosmix_stationskatalog.pdf?__blob=publicationFile&v=4
-			jqForecastXHR = $.getJSON("rest/forecast/10865/OPEN_WEATHER/1")
+			jqForecastXHR = $.getJSON("rest/forecast/home/1")
 			.done(function(data) {
 				foreCast = {};
 				foreCast.temperature = [];

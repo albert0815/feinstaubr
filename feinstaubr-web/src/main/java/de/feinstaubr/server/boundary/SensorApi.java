@@ -134,8 +134,8 @@ public class SensorApi {
 				measurement.setCalculatedValue(calculatedPpm);
 			} else if ("pressure".equals(measurementType.getType())) {
 //				Luftdruck auf Meereshöhe = Barometeranzeige / (1-Temperaturgradient*Höhe/Temperatur + Temperaturgradient * Höhe in Kelvin)^(0,03416/Temperaturgradient)
-				BigDecimal temperatureMeasurement = getLatestOutsideTemperature(sensor);
-				measurement.setCalculatedValue(PressureCalculator.calculatePressure(measurement.getValue(), temperatureMeasurement, 545));//FIXME sensor.getHeight()
+//				BigDecimal temperatureMeasurement = getLatestOutsideTemperature(sensor);
+//				measurement.setCalculatedValue(PressureCalculator.calculatePressure(measurement.getValue(), temperatureMeasurement, 545));//FIXME sensor.getHeight()
 			}
 			LOGGER.info("saving new measurement " + measurement);
 			em.persist(measurement);

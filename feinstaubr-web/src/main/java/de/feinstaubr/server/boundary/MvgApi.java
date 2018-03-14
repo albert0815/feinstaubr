@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -27,6 +28,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 
+import de.feinstaubr.server.control.ConfigurationController;
 import de.feinstaubr.server.entity.MvgDeparture;
 import de.feinstaubr.server.entity.MvgProduct;
 import de.feinstaubr.server.entity.MvgStation;
@@ -38,6 +40,9 @@ public class MvgApi {
 
 	@PersistenceContext
 	private EntityManager em;
+	
+	@Inject
+	private ConfigurationController configurationController;
 	
 	@GET
 	@Path("{latitude}/{longitude}")
@@ -66,7 +71,7 @@ public class MvgApi {
 		
 		for (MvgStation station : stations) {
 			WebTarget target = client.target("https://www.mvg.de/fahrinfo/api/departure/" + station.getStationId());
-			String footway = "10";
+			String footway = configurationController.getConfiguration("mvg", "footway", "10");
 			if (station.getFootway() != null) {
 				footway = station.getFootway().toString();
 			}
@@ -78,7 +83,9 @@ public class MvgApi {
 				List<MvgDeparture> liveDepartureList = new ArrayList<>();
 				Pattern destinationPattern = Pattern.compile(station.getDestinationFilter());
 				Calendar cal = Calendar.getInstance();
-				cal.add(Calendar.MINUTE, 30);
+				int departureInterval = configurationController.getConfigurationInt("mvg", "departureInterval", 20);
+				Integer maxDepartures = configurationController.getConfigurationInt("mvg", "maxDepartures");
+				cal.add(Calendar.MINUTE, departureInterval);
 				Date nowPlusHalfHour = cal.getTime();
 				for (JsonValue jsonValue : mvgDepartures) {
 					if (jsonValue instanceof JsonObject) {
@@ -97,6 +104,9 @@ public class MvgApi {
 						departure.setLine(jsonDeparture.getString("label"));
 						departure.setProduct(MvgProduct.getEnum(jsonDeparture.getString("product")));
 						liveDepartureList.add(departure);
+						if (liveDepartureList.size() > maxDepartures) {
+							break;
+						}
 					} else {
 						LOGGER.severe("unexpected format of MVG api, received: " + jsonValue);
 					}

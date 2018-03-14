@@ -22,6 +22,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import de.feinstaubr.server.control.ConfigurationController;
 import de.feinstaubr.server.control.WeatherIconCreator;
 import de.feinstaubr.server.entity.ForecastSource;
 import de.feinstaubr.server.entity.SensorLocation_;
@@ -37,11 +38,14 @@ public class ForecastApi {
 	@Inject
 	private WeatherIconCreator weatherIconCreator;
 	
+	@Inject
+	private ConfigurationController configurationController;
+	
 	@GET
-	@Path("{poi}/{source}")
+	@Path("{sensorLocationExternalId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getNextForecastJson(@PathParam("poi") String poi, @PathParam("source") ForecastSource source) {
-		WeatherForecast result = getNextForecast(poi, source);
+	public Response getNextForecastJson(@PathParam("sensorLocationExternalId") String sensorLocationExternalId) {
+		WeatherForecast result = getNextForecast(sensorLocationExternalId);
 		if (result != null) {
 			return Response.ok(mapForecastToJson(result).build()).build(); 
 		} else {
@@ -49,7 +53,7 @@ public class ForecastApi {
 		}
 	}
 
-	public WeatherForecast getNextForecast(String poi, ForecastSource source) {
+	public WeatherForecast getNextForecast(String sensorLocationExternalId) {
 		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 		CriteriaQuery<WeatherForecast> query = criteriaBuilder.createQuery(WeatherForecast.class);
 		Root<WeatherForecast> root = query.from(WeatherForecast.class);
@@ -59,8 +63,8 @@ public class ForecastApi {
 			cal.set(Calendar.HOUR_OF_DAY, 8);
 		}
 		Predicate dateStartPredicate = criteriaBuilder.greaterThanOrEqualTo(root.get(WeatherForecast_.forecastDate), cal.getTime());
-		Predicate poiPredicate = criteriaBuilder.equal(root.get(WeatherForecast_.location).get(SensorLocation_.dwdPoiId), poi);
-		Predicate sourcePredicate = criteriaBuilder.equal(root.get(WeatherForecast_.forecastSource), source);
+		Predicate poiPredicate = criteriaBuilder.equal(root.get(WeatherForecast_.location).get(SensorLocation_.externalId), sensorLocationExternalId);
+		Predicate sourcePredicate = criteriaBuilder.equal(root.get(WeatherForecast_.forecastSource), getCurrentForecastSource());
 		query.where(criteriaBuilder.and(dateStartPredicate, poiPredicate, sourcePredicate));
 		query.orderBy(criteriaBuilder.asc(root.get(WeatherForecast_.forecastDate)));
 		try {
@@ -72,9 +76,9 @@ public class ForecastApi {
 	}
 	
 	@GET
-	@Path("{poi}/{source}/{period}")
+	@Path("{sensorLocationExternalId}/{period}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getForecasts(@PathParam("poi") String poi, @PathParam("period")Integer daysToForecast, @PathParam("source") ForecastSource source) {
+	public Response getForecasts(@PathParam("sensorLocationExternalId") String sensorLocationExternalId, @PathParam("period")Integer daysToForecast) {
 		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 		CriteriaQuery<WeatherForecast> query = criteriaBuilder.createQuery(WeatherForecast.class);
 		Root<WeatherForecast> root = query.from(WeatherForecast.class);
@@ -87,8 +91,8 @@ public class ForecastApi {
 		cal.add(Calendar.DATE, daysToForecast);
 		cal.set(Calendar.HOUR_OF_DAY, 1);
 		Predicate dateEndPredicate = criteriaBuilder.lessThanOrEqualTo(root.get(WeatherForecast_.forecastDate), cal.getTime());
-		Predicate poiPredicate = criteriaBuilder.equal(root.get(WeatherForecast_.location).get(SensorLocation_.dwdPoiId), poi);
-		Predicate sourcePredicate = criteriaBuilder.equal(root.get(WeatherForecast_.forecastSource), source);
+		Predicate poiPredicate = criteriaBuilder.equal(root.get(WeatherForecast_.location).get(SensorLocation_.externalId), sensorLocationExternalId);
+		Predicate sourcePredicate = criteriaBuilder.equal(root.get(WeatherForecast_.forecastSource), getCurrentForecastSource());
 
 		query.where(criteriaBuilder.and(dateStartPredicate, dateEndPredicate, poiPredicate, sourcePredicate));
 		query.orderBy(criteriaBuilder.asc(root.get(WeatherForecast_.forecastDate)));
@@ -100,12 +104,12 @@ public class ForecastApi {
 		return Response.ok(jsonArray.build()).build();
 	}
 	
-	public List<WeatherForecast> getForecastFor24hours(String poi, ForecastSource source) {
+	public List<WeatherForecast> getForecastFor24hours(String sensorLocationExternalId) {
 		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 		CriteriaQuery<WeatherForecast> query = criteriaBuilder.createQuery(WeatherForecast.class);
 		Root<WeatherForecast> root = query.from(WeatherForecast.class);
 		Calendar cal = Calendar.getInstance();
-		if (cal.get(Calendar.HOUR_OF_DAY) > 18) {
+		if (cal.get(Calendar.HOUR_OF_DAY) >= 12) {
 			cal.add(Calendar.DATE, 1);
 		}
 
@@ -119,14 +123,17 @@ public class ForecastApi {
 		cal.set(Calendar.HOUR_OF_DAY, 19);
 
 		Predicate dateEndPredicate = criteriaBuilder.lessThanOrEqualTo(root.get(WeatherForecast_.forecastDate), cal.getTime());
-		Predicate poiPredicate = criteriaBuilder.equal(root.get(WeatherForecast_.location).get(SensorLocation_.dwdPoiId), poi);
-		Predicate sourcePredicate = criteriaBuilder.equal(root.get(WeatherForecast_.forecastSource), source);
+		Predicate poiPredicate = criteriaBuilder.equal(root.get(WeatherForecast_.location).get(SensorLocation_.externalId), sensorLocationExternalId);
+		Predicate sourcePredicate = criteriaBuilder.equal(root.get(WeatherForecast_.forecastSource), getCurrentForecastSource());
 
 		query.where(criteriaBuilder.and(dateStartPredicate, dateEndPredicate, poiPredicate, sourcePredicate));
 		query.orderBy(criteriaBuilder.asc(root.get(WeatherForecast_.forecastDate)));
 		List<WeatherForecast> result = em.createQuery(query).getResultList();
 		return result;
-
+	}
+	
+	private ForecastSource getCurrentForecastSource() {
+		return configurationController.getConfigurationEnum("weather", "forecast.source", ForecastSource.class, ForecastSource.OPEN_WEATHER);
 	}
 
 	private JsonObjectBuilder mapForecastToJson(WeatherForecast forecast) {
