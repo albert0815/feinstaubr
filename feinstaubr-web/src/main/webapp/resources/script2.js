@@ -1,5 +1,15 @@
 var chartData = [];
 
+var weekday = new Array(7);
+weekday[0] =  "Sonntag";
+weekday[1] = "Montag";
+weekday[2] = "Dienstag";
+weekday[3] = "Mittwoch";
+weekday[4] = "Donnerstag";
+weekday[5] = "Freitag";
+weekday[6] = "Samstag";
+
+
 function loadData() {
 	
         var drawer = new mdc.drawer.MDCTemporaryDrawer(document.querySelector('.mdc-drawer--temporary'));
@@ -55,7 +65,7 @@ function visualizeForecast(forecast, id) {
 		} else if (date.getDate() === tomorrow.getDate() && date.getMonth() === tomorrow.getMonth() && date.getFullYear() === tomorrow.getFullYear()) {
 			dateString = "Morgen";
 		} else {
-			dateString = pad(date.getDate()) + "." + pad(date.getMonth() + 1) + "." + pad(date.getFullYear());
+			dateString = weekday[date.getDay()];
 		}
 		dateString = dateString + " " + pad(date.getHours()) + ":" + pad(date.getMinutes());
 		li.querySelector(".mdc-list-item__text").prepend(document.createTextNode(dateString));

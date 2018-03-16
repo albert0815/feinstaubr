@@ -104,7 +104,7 @@ public class MvgApi {
 						departure.setLine(jsonDeparture.getString("label"));
 						departure.setProduct(MvgProduct.getEnum(jsonDeparture.getString("product")));
 						liveDepartureList.add(departure);
-						if (liveDepartureList.size() > maxDepartures) {
+						if (liveDepartureList.size() >= maxDepartures) {
 							break;
 						}
 					} else {

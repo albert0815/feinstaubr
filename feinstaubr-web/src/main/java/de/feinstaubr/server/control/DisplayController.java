@@ -181,14 +181,16 @@ public class DisplayController {
 		offsetX = 10;
 		List<MvgStation> stations = mvg.getStations(config.getSensorLocation().getLatitude(), config.getSensorLocation().getLongitude());
 		int i = 0;
+		int maxEntriesPerColumn = 7;
 		for (MvgStation station : stations) {
 			if (station.getDepartures().isEmpty() || station.getDistanceTo(config.getSensorLocation().getLatitude(), config.getSensorLocation().getLongitude()) > 1) {
 				continue;
 			}
-			if (i > 6) {//second column
+			if (i >= maxEntriesPerColumn) {//second column
 				offsetY = 225;
 				offsetX = offsetX + width / 2;
 				i = 0;
+				maxEntriesPerColumn = 8;
 			}
 			ig2.setFont(smallHeaderFont);
 			ig2.drawString(station.getName(), offsetX + 1, 18 * i + offsetY);
@@ -198,10 +200,11 @@ public class DisplayController {
 				SimpleDateFormat format = new SimpleDateFormat("HH:mm");
 				String time = format.format(dep.getDepartureTime());
 				ig2.drawString(time + " - " + dep.getLine() + " - " + dep.getDestination(), offsetX + 6, 18 * i + offsetY);
-				if (i > 6) {//second column
+				if (i >= maxEntriesPerColumn) {//second column
 					offsetY = 225;
 					offsetX = offsetX + width / 2;
 					i = 0;
+					maxEntriesPerColumn = 8;
 				} else {
 					i++;
 				}
@@ -276,15 +279,15 @@ public class DisplayController {
         yAxis.setAxisLinePaint(Color.black);
         yAxis.setTickMarkPaint(Color.black);
         yAxis.setTickLabelFont(verySmallWriteFont);
-//        NumberAxis yAxis2 = new NumberAxis();
-//        yAxis2.setAxisLinePaint(Color.black);
-//        yAxis2.setTickMarkPaint(Color.black);
-//        yAxis2.setAutoRangeMinimumSize(20);
-//        yAxis2.setRangeType(RangeType.POSITIVE);
-//        yAxis2.setTickLabelFont(verySmallWriteFont);
+        NumberAxis yAxis2 = new NumberAxis();
+        yAxis2.setAxisLinePaint(Color.black);
+        yAxis2.setTickMarkPaint(Color.black);
+        yAxis2.setAutoRangeMinimumSize(20);
+        yAxis2.setRangeType(RangeType.POSITIVE);
+        yAxis2.setTickLabelFont(verySmallWriteFont);
         plot.setDomainAxis(xAxis); 
         plot.setRangeAxis(0, yAxis);
-//        plot.setRangeAxis(1, yAxis2);
+        plot.setRangeAxis(1, yAxis2);
 
         plot.setDataset(dataset1);
         plot.setDataset(1, dataset3);

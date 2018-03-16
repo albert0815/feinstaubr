@@ -265,6 +265,8 @@ insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('
 -- 1.1
 insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'mvg', 'maxDepartures', '4');
 insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'mvg', 'departureInterval', '20');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'mvg', 'footway', '8');
+insert into FeinstaubrConfiguration (id, category, key, value) values (nextval('hibernate_sequence'), 'weather', 'forecast.source', 'DWD');
 
 create table DisplayConfiguration (
 	id int8 not null,
