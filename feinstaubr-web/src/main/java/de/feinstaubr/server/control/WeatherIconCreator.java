@@ -24,7 +24,7 @@ public class WeatherIconCreator {
 		
 		// if clouds are covered more than 80% we use the neutral icons
 		// (without having a sun or a moon on it)
-		if (fc.getCloudCoverTotal().compareTo(new BigDecimal(80)) > 0) {
+		if (fc.getCloudCoverTotal() != null && fc.getCloudCoverTotal().compareTo(new BigDecimal(80)) > 0) {
 			type = "neutral";
 		} else {
 			// if there are not only clouds we also show a sun or a moon
