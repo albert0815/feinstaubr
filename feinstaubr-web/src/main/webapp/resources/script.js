@@ -38,8 +38,7 @@
 				$("#progressbar").css("display", "none");
 			});
 		
-		if (getPeriod() === "day") {
-			// based on https://www.dwd.de/DE/leistungen/met_verfahren_mosmix/mosmix_stationskatalog.pdf?__blob=publicationFile&v=4
+		if ((getPeriod() === "day" || getPeriod() === "week") && getSensorId() === "7620363") {
 			jqForecastXHR = $.getJSON("rest/forecast/home/1")
 			.done(function(data) {
 				foreCast = {};
@@ -55,6 +54,8 @@
 			}).always(function() {
 				jqForecastXHR = undefined;
 			});
+		} else {
+			foreCast = {};
 		}
 	}
 
