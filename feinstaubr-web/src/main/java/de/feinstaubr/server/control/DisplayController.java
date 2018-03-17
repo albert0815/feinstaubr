@@ -27,6 +27,7 @@ import javax.persistence.PersistenceContext;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
@@ -288,6 +289,7 @@ public class DisplayController {
         plot.setDomainAxis(xAxis); 
         plot.setRangeAxis(0, yAxis);
         plot.setRangeAxis(1, yAxis2);
+        plot.addRangeMarker(new ValueMarker(0, Color.black, new BasicStroke()));
 
         plot.setDataset(dataset1);
         plot.setDataset(1, dataset3);

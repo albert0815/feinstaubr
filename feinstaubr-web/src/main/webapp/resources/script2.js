@@ -119,6 +119,14 @@ function drawCharts() {
 	else {
 		gridCount = 8;
 	}
+	
+	var columnRange = dataTable.getColumnRange(2);
+	if (columnRange.max < 20) {
+		precipitationMaxValue = 20;
+	} else {
+		precipitationMaxValue = columnRange.max;
+	}
+	
 
 	var options = {
 			seriesType: 'line',
@@ -135,10 +143,15 @@ function drawCharts() {
 			position : 'none'
 		},
 		curveType : 'function',
+		/*
 		vAxis : {
-//			minValue : yMinValue,
-			format: '0'
-		},
+			0: {viewWindow : { min:0, max : precipitationMaxValue}, format: '0'},
+			1: {viewWindow : { max : precipitationMaxValue}, format: '0'}
+		},*/
+		vAxes: {
+			 0: {  },
+			 1: { viewWindow: { min: 0, max: precipitationMaxValue } }
+			},
 		hAxis : {
 			gridlines : {
 				count : gridCount,

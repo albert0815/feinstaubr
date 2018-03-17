@@ -52,7 +52,7 @@ public class ForecastDataReadScheduler {
 			List<WeatherForecast> forecastsDwd = dwd.getForecasts(loc.getDwdPoiId());
 			updateForecastsInDb(loc, forecastsDwd);
 			
-			List<WeatherForecast> forecastsOpen = openWeather.getForecast(loc.getOpenWeatherId());
+			List<WeatherForecast> forecastsOpen = openWeather.getForecast(loc);
 			updateForecastsInDb(loc, forecastsOpen);
 		}
 	}
@@ -95,42 +95,42 @@ public class ForecastDataReadScheduler {
 		if (forecast.getChanceOfRain() == null) {
 			if (other.getChanceOfRain() != null)
 				return false;
-		} else if (other.getChanceOfRain() == null ||forecast.getChanceOfRain().compareTo(other.getChanceOfRain()) > 0)
+		} else if (other.getChanceOfRain() == null ||forecast.getChanceOfRain().compareTo(other.getChanceOfRain()) != 0)
 			return false;
 		if (forecast.getCloudCoverTotal() == null) {
 			if (other.getCloudCoverTotal() != null)
 				return false;
-		} else if (other.getCloudCoverTotal() == null || forecast.getCloudCoverTotal().compareTo(other.getCloudCoverTotal()) > 0)
+		} else if (other.getCloudCoverTotal() == null || forecast.getCloudCoverTotal().compareTo(other.getCloudCoverTotal()) != 0)
 			return false;
 		if (forecast.getHumidity() == null) {
 			if (other.getHumidity() != null)
 				return false;
-		} else if (other.getHumidity() == null || forecast.getHumidity().compareTo(other.getHumidity()) > 0)
+		} else if (other.getHumidity() == null || forecast.getHumidity().compareTo(other.getHumidity()) != 0)
 			return false;
 		if (forecast.getMeanWindDirection() == null) {
 			if (other.getMeanWindDirection() != null)
 				return false;
-		} else if (other.getMeanWindDirection() == null || forecast.getMeanWindDirection().compareTo(other.getMeanWindDirection()) > 0)
+		} else if (other.getMeanWindDirection() == null || forecast.getMeanWindDirection().compareTo(other.getMeanWindDirection()) != 0)
 			return false;
 		if (forecast.getMeanWindSpeed() == null) {
 			if (other.getMeanWindSpeed() != null)
 				return false;
-		} else if (other.getMeanWindSpeed() == null || forecast.getMeanWindSpeed().compareTo(other.getMeanWindSpeed()) > 0)
+		} else if (other.getMeanWindSpeed() == null || forecast.getMeanWindSpeed().compareTo(other.getMeanWindSpeed()) != 0)
 			return false;
 		if (forecast.getPrecipitation() == null) {
 			if (other.getPrecipitation() != null)
 				return false;
-		} else if (other.getPrecipitation() == null || forecast.getPrecipitation().compareTo(other.getPrecipitation()) > 0)
+		} else if (other.getPrecipitation() == null || forecast.getPrecipitation().compareTo(other.getPrecipitation()) != 0)
 			return false;
 		if (forecast.getPressure() == null) {
 			if (other.getPressure() != null)
 				return false;
-		} else if (other.getPressure() == null || forecast.getPressure().compareTo(other.getPressure()) > 0)
+		} else if (other.getPressure() == null || forecast.getPressure().compareTo(other.getPressure()) != 0)
 			return false;
 		if (forecast.getTemperature() == null) {
 			if (other.getTemperature() != null)
 				return false;
-		} else if (other.getTemperature() == null || forecast.getTemperature().compareTo(other.getTemperature()) > 0)
+		} else if (other.getTemperature() == null || forecast.getTemperature().compareTo(other.getTemperature()) != 0)
 			return false;
 		if (!forecast.getWeather().equals(other.getWeather()))
 			return false;

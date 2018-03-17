@@ -22,6 +22,7 @@ public class SensorLocation {
 	private String openWeatherId;
 	private double latitude;
 	private double longitude;
+	private int height; 
 	
 	@OneToMany(mappedBy="location")
 	private List<Sensor> sensors;
@@ -81,5 +82,15 @@ public class SensorLocation {
 	public String getExternalId() {
 		return externalId;
 	}
+
+	public int getHeight() {
+		return height;
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
+	}
+	
+	
 
 }
