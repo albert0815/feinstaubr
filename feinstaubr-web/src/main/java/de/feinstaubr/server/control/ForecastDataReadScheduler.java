@@ -2,6 +2,7 @@ package de.feinstaubr.server.control;
 
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -37,11 +38,16 @@ public class ForecastDataReadScheduler {
 
 	@PostConstruct
 	public void init() {
-		updateDwdData();
+		try {
+			updateForecastData();
+		} catch (RuntimeException e) {
+			// we catch every runtime exception so the server starts in any case (even if forecast update failed)
+			LOGGER.log(Level.SEVERE, "updating of forecasts failed", e);
+		}
 	}
 	
 	@Schedule(hour="*", persistent=false)
-	public void updateDwdData() {
+	public void updateForecastData() {
 		LOGGER.info("updating forecast data");
 		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 		CriteriaQuery<SensorLocation> sensorLocationQuery = criteriaBuilder.createQuery(SensorLocation.class);

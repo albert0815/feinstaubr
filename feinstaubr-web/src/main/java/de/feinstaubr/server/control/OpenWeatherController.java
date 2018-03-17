@@ -63,6 +63,17 @@ public class OpenWeatherController {
 						forecast.setPrecipitation(jsonNumber.bigDecimalValue().setScale(2, RoundingMode.HALF_UP));
 					}
 				}
+				if (forecastJson.containsKey("snow")) {
+					JsonNumber jsonNumber = forecastJson.getJsonObject("snow").getJsonNumber("3h");
+					if  (jsonNumber != null) {
+						if (forecast.getPrecipitation() != null) {
+							BigDecimal rainAndSnow = forecast.getPrecipitation().add(jsonNumber.bigDecimalValue().setScale(2, RoundingMode.HALF_UP));
+							forecast.setPrecipitation(rainAndSnow);
+						} else {
+							forecast.setPrecipitation(jsonNumber.bigDecimalValue().setScale(2, RoundingMode.HALF_UP));
+						}
+					}
+				}
 				if (forecastJson.containsKey("main")) {
 					BigDecimal pressure = forecastJson.getJsonObject("main").getJsonNumber("pressure").bigDecimalValue();
 					BigDecimal temp = forecastJson.getJsonObject("main").getJsonNumber("temp").bigDecimalValue();
