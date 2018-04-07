@@ -5,7 +5,6 @@ services:
 cache:
   directories:
   - ${HOME}/.m2
-  - ${HOME}/google-cloud-sdk
 
 jdk:
 - oraclejdk8
@@ -14,19 +13,6 @@ script:
 - echo 1.${TRAVIS_BUILD_NUMBER}>src/main/resources/version
 - mvn install
 after_success:
-- export CLOUDSDK_CORE_DISABLE_PROMPTS=1
-- rm -rf ${HOME}/google-cloud-sdk
-- curl https://sdk.cloud.google.com | bash
-- ${HOME}/google-cloud-sdk/bin/gcloud components install kubectl
-- ${HOME}/google-cloud-sdk/bin/gcloud version
-- ${HOME}/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file ../gce.json
-- ${HOME}/google-cloud-sdk/bin/gcloud config set project feinstaubr
-- docker build . -t gcr.io/feinstaubr/feinstaubr-web:1.${TRAVIS_BUILD_NUMBER}
-- ${HOME}/google-cloud-sdk/bin/gcloud docker -- push gcr.io/feinstaubr/feinstaubr-web:1.${TRAVIS_BUILD_NUMBER}
-- ${HOME}/google-cloud-sdk/bin/gcloud container clusters get-credentials feinstaubr-cluster --zone europe-west3-a
-- ${HOME}/google-cloud-sdk/bin/kubectl set image deployment feinstaubr feinstaubr=gcr.io/feinstaubr/feinstaubr-web:1.${TRAVIS_BUILD_NUMBER}
+- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+- docker build . -t albert0815/feinstaub:1.${TRAVIS_BUILD_NUMBER}
 
-
-before_install:
-- openssl aes-256-cbc -K $encrypted_e4b7d3b0f372_key -iv $encrypted_e4b7d3b0f372_iv
-  -in gce.json.enc -out gce.json -d
